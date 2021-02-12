@@ -73,7 +73,7 @@ io.on('connection', (socket) => {
             }
             else {
                 if (socket.my_room != rid) {
-                    if (room_loaded) {//if target room exist / have someone else
+                    if (room_loaded) { //if target room exist / have someone else
                         loaded_rooms.filter(room => {
                             if (room.id == rid) {
                                 room.users++
@@ -109,6 +109,7 @@ io.on('connection', (socket) => {
                             player.room = rid
                             player.x = door_x
                             player.y = door_y
+                            socket.emit("my_id", socket.id)
                         }
                     })
 
@@ -156,7 +157,7 @@ io.on('connection', (socket) => {
     socket.on("chat", data => {
         const player = players.filter(player => {
             if (player.socket == socket.id) {
-                io.to(player.room).emit("chat", { username: player.username, message: data, x: player.x });
+                io.to(player.room).emit("chat", { username: player.username, message: data, x: player.x, y: player.y });
             }
         })
     })

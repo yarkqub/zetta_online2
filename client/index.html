@@ -700,6 +700,13 @@
                         ctx.fillRect(20, can.height - (i * 20) - 150, chat_len2, 18)
                         ctx.fillStyle = "#F00"
                         ctx.fillText(chat_len, 25, can.height - (i * 20) + 12 - 150)
+                        //bubble chat
+                        const pla_x = display_x + (chat.x * (tile.width * 2) - (chat.x * tile.width) - (chat.y * tile.width))
+                        ctx.textAlign = "center";
+                        ctx.fillStyle = "#FFF"
+                        ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
+                        ctx.fillStyle = "#000"
+                        ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
                     })
                 }
 
@@ -1088,7 +1095,8 @@
             })
 
             socket.on("chat", data => {
-                chats.unshift({ username: data.username, message: data.message, x: data.x })
+                console.log("Chat", data)
+                chats.unshift({ username: data.username, message: data.message, x: data.x, y: data.y })
             })
 
             socket.on("move", data => {

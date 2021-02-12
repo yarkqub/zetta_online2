@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zetta Online</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="astar.js"></script>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+            outline: none;
+        }
+
+        #form {
+            background-color: rgb(202, 255, 255);
+            padding: 8px;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+        }
+
+        .input {
+            border: 1px solid black;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+        }
+
+        .button {
+            border: 1px solid black;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            background-color: deepskyblue;
+            color: white;
+        }
+
+        .button:hover {
+            background-color: aqua;
+            color: black;
+        }
+
+        #chat_box {
+            z-index: 4;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 50%;
+            padding: 8px;
+            margin-left: 25%;
+            display: none;
+        }
+
+        #open_room_nav {
+            z-index: 4;
+            position: fixed;
+            bottom: 20px;
+            left: 0px;
+            width: 50px;
+            height: 50px;
+            display: none;
+            margin-left: 8px;
+        }
+
+        #open_shop {
+            z-index: 4;
+            position: fixed;
+            bottom: 70px;
+            left: 0px;
+            width: 50px;
+            height: 50px;
+            display: none;
+            margin-left: 8px;
+        }
+
+        #open_inventory {
+            z-index: 4;
+            position: fixed;
+            bottom: 120px;
+            left: 0px;
+            width: 50px;
+            height: 50px;
+            display: none;
+            margin-left: 8px;
+        }
+
+        img {
+            -webkit-touch-callout: none;
+            /* iOS Safari */
+            -webkit-user-select: none;
+            /* Safari */
+            -khtml-user-select: none;
+            /* Konqueror HTML */
+            -moz-user-select: none;
+            /* Old versions of Firefox */
+            -ms-user-select: none;
+            /* Internet Explorer/Edge */
+            user-select: none;
+            /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+        }
+
+        #room_nav {
+            position: absolute;
+            z-index: 9;
+            background-color: #EBE9DF;
+            text-align: center;
+            display: none;
+            top: 28px;
+            left: 20px;
+            width: 400px;
+            height: 80vh;
+            border-radius: 5px;
+            max-width: calc(100% - 40px);
+            max-height: 75%;
+        }
+
+        .floating_close {
+            position: absolute;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid black;
+            border-radius: 4px;
+            background-color: #BD3B2F;
+            color: white;
+            margin-top: -5px;
+            font-weight: bold;
+            font-size: larger;
+            cursor: pointer;
+            top: 10px;
+        }
+
+        .floating_window {
+            position: absolute;
+            z-index: 9;
+            background-color: #EBE9DF;
+            text-align: center;
+            display: none;
+            top: 28px;
+            left: 20px;
+            width: 500px;
+            height: 80vh;
+            border-radius: 5px;
+            max-width: calc(100% - 40px);
+            max-height: 60%;
+        }
+
+        .floating_window_header {
+            cursor: move;
+            z-index: 10;
+            background-color: #367897;
+            color: #fff;
+            border-radius: 5px;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+            font-weight: bold;
+            font-size: 13px;
+            height: 30px;
+            line-height: 2.3;
+        }
+
+        #room_nav_header {
+            cursor: move;
+            z-index: 10;
+            background-color: #367897;
+            color: #fff;
+            border-radius: 5px;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+            font-weight: bold;
+            font-size: 13px;
+            height: 30px;
+            line-height: 2.3;
+        }
+
+        #close_room_nav {
+            position: absolute;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid black;
+            border-radius: 4px;
+            background-color: #BD3B2F;
+            color: white;
+            margin-top: -5px;
+            font-weight: bold;
+            font-size: larger;
+            cursor: pointer;
+            top: 10px;
+        }
+
+        .inventory_type,
+        .shop_type,
+        .room_nav_type {
+            padding: 5px;
+            border: 1px solid black;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            cursor: pointer;
+            background-color: #CAC9C1;
+        }
+
+
+
+        .active_room_nav {
+            border-bottom: 1px solid #EBE9DF;
+            background-color: #EBE9DF;
+        }
+
+        .room_list {
+            width: 90%;
+            margin-left: 5%;
+            height: 70%;
+            margin-top: 20px;
+            overflow-y: scroll;
+        }
+
+        .room_list_item {
+            width: 100%;
+            position: relative;
+            height: 20px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .room_list_item:nth-child(odd) {
+            background-color: #D5EDFF;
+        }
+
+        .room_list_item:nth-child(even) {
+            background-color: #FFFFFF;
+        }
+
+        .room_list_users {
+            background-color: #62B061;
+            color: white;
+            position: absolute;
+            left: 0px;
+            width: 36px;
+            border-radius: 4px;
+        }
+
+        .room_list_users1 {
+            background-color: #CAC9C0;
+            color: white;
+            position: absolute;
+            left: 0px;
+            width: 36px;
+            border-radius: 4px;
+        }
+
+        .room_list_name {
+            position: absolute;
+            left: 45px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="room_nav">
+        <div id="room_nav_header">Room Navigator<button id="close_room_nav">&times;</button></div>
+        <div
+            style="border-bottom: 1px solid black; background-color: white; height: 35px; width: 100%; position: relative; overflow: visible;">
+            <div style="position:absolute; width: 100%; bottom: -1px;">
+                <button class="room_nav_type active_room_nav" data="public">Public</button>
+                <button class="room_nav_type" data="all">All Rooms</button>
+                <button class="room_nav_type" data="event">Events?</button>
+                <button class="room_nav_type" data="my">My Rooms</button>
+            </div>
+        </div>
+        <div class="room_list"></div>
+    </div>
+
+    <div id="shop" class="floating_window">
+        <div id="shop_header" class="floating_window_header">Shop<button id="close_shop"
+                class="floating_close">&times;</button></div>
+        <div
+            style="border-bottom: 1px solid black; background-color: white; height: 35px; width: 100%; position: relative; overflow: visible;">
+            <div style="position:absolute; width: 100%; bottom: -1px;">
+                <button class="shop_type active_room_nav" data="front">Front Page</button>
+                <button class="shop_type" data="furniture">Furniture</button>
+            </div>
+        </div>
+        <div class="shop_list"></div>
+    </div>
+
+    <div id="inventory" class="floating_window">
+        <div id="inventory_header" class="floating_window_header">Inventory<button id="close_inventory"
+                class="floating_close">&times;</button></div>
+        <div
+            style="border-bottom: 1px solid black; background-color: white; height: 35px; width: 100%; position: relative; overflow: visible;">
+            <div style="position:absolute; width: 100%; bottom: -1px;">
+                <button class="inventory_type active_room_nav" data="furniture">Furniture</button>
+                <button class="inventory_type" data="badge">Badges</button>
+            </div>
+        </div>
+        <div class="inventory_list"></div>
+    </div>
+
+    <div id="form">
+        <div id="login">
+            <h1>Login</h1>
+            <label for="login_username">Username: </label><input class="input" type="text" name=""
+                id="login_username"><br>
+            <label for="login_password">Password: </label><input class="input" type="password" name=""
+                id="login_password">
+            <hr>
+            <button id="do_login" class="button">Login</button>
+            <button id="goto_register" class="button">Register</button>
+        </div>
+        <div id="register" style="display: none;">
+            <h1>Register</h1>
+            <label for="reg_username">Username: </label><input class="input" type="text" name="" id="reg_username"><br>
+            <label for="reg_email">Email: </label><input class="input" type="email" name="" id="reg_email"><br>
+            <label for="reg_password">Password: </label><input class="input" type="password" name=""
+                id="reg_password"><br>
+            <label for="conf_password">Confirm password: </label><input class="input" type="password" name=""
+                id="conf_password">
+            <hr>
+            <button id="do_register" class="button">Register</button>
+            <button id="goto_login" class="button">Login</button>
+        </div>
+    </div>
+
+    <canvas id="can"></canvas>
+    <img src="transparent.png" id="touch_screen">
+    <button id="open_room_nav" class="in_client">Room</button>
+    <button id="open_inventory" class="in_client">Inventory</button>
+    <button id="open_shop" class="in_client">Shop</button>
+    <input type="text" class="in_client" id="chat_box" placeholder="Type here to chat...">
+
+    <script>
+        (() => {
+            const socket = io()
+
+            const can = document.querySelector("#can")
+            const ctx = can.getContext("2d", { alpha: false })
+            const tile_width = 64
+            const touch_screen = document.querySelector("#touch_screen")
+            const imgmap = document.createElement("map")
+
+            const tile = {
+                width: tile_width / 2,
+                height: tile_width / 4
+            }
+
+            let interval
+            let display_x = window.innerWidth / 2
+            let display_y = window.innerHeight / 2
+            let players = []
+            let chats = []
+            //let move = []
+            const walking = [];
+            let my_username = ""
+            let my_coins = ""
+
+            const fps = 16
+            let frameCount = 0
+            let fpsInterval, startTime, now, then, elapsed
+
+            let room_type = "public"
+
+            let cursor_x = -1
+            let cursor_y = -1
+
+            let graph = ""
+
+            let room = {
+                name: "",
+                map: [],
+                door_x: 0,
+                door_y: 0
+            }
+
+            //player image
+            const char_image = new Image()
+            //char_image.src = "characters/spaghetti_atlas_05.png"
+            char_image.src = "characters/character_sprite.png"
+            const character = {
+                width: 64,
+                height: 110
+            }
+            /*const character = {
+                width: 2040 / 24,
+                height: 510 / 3
+            }*/
+
+
+            can.width = window.innerWidth
+            can.height = window.innerHeight
+
+            const start = () => {
+                //interval = setInterval(game, 15 / 1000)
+                can.style.zIndex = "1"
+                touch_screen.style.width = "100%"
+                touch_screen.style.height = "100%"
+                touch_screen.style.top = "0px"
+                touch_screen.style.left = "0px"
+                touch_screen.style.position = "absolute"
+                touch_screen.setAttribute('draggable', false)
+                touch_screen.setAttribute("usemap", "#imgmap")
+                touch_screen.style.zIndex = "2"
+                imgmap.setAttribute("name", "imgmap")
+                imgmap.style.zIndex = "3"
+                document.body.insertBefore(imgmap, document.body.childNodes[0]);
+
+                fpsInterval = 1000 / fps;
+                then = performance.now();
+                startTime = then
+                game()
+            }
+
+            //count test~ make the count half
+            let frame_count = 0
+            let current_frame = 0
+
+            //game that will loop forever
+            const game = () => {
+
+                now = performance.now();
+                elapsed = now - then;
+                if (elapsed > fpsInterval) {
+                    //frame_count++
+                    then = now - (elapsed % fpsInterval);
+                    // TESTING...Report #seconds since start and achieved fps.
+                    const sinceStart = now - startTime;
+                    const currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
+                    //$results.text("Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.");
+
+                    ctx.fillStyle = "#000000"
+                    ctx.fillRect(0, 0, can.width, can.height)
+
+                    ctx.font = "15px Arial"
+                    ctx.textAlign = "end";
+                    ctx.fillStyle = "#FFD700"
+                    ctx.fillText(my_username, can.width - 20, 40)
+                    ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
+
+                    ctx.fillStyle = "#F00"
+                    ctx.font = "12px Arial"
+                    ctx.textAlign = "start";
+                    ctx.fillText("Zetta Online [v0.04] | Room: " + room.name + " | ?" + currentFps, 20, 20)
+
+                    ctx.strokeStyle = "#8E8E5E"
+                    ctx.fillStyle = "#989865"
+
+                    const map_j = room.map.length
+                    for (let j = 0; j < map_j; j++) {
+                        const map_i = room.map[j].length
+                        for (let i = 0; i < map_i; i++) {
+                            if (room.map[j][i]) {
+                                const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
+                                const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+                                const ys = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height))
+
+                                //tile shadow when height
+                                ctx.fillStyle = "#555";
+                                ctx.beginPath()
+                                ctx.moveTo(x, ys - tile.height)
+                                ctx.lineTo(x + tile.width, ys)
+                                ctx.lineTo(x, ys + tile.height)
+                                ctx.lineTo(x - tile.width, ys)
+                                ctx.closePath()
+                                ctx.fill()
+
+                                //tile surface
+                                ctx.strokeStyle = "#8E8E5E"
+                                ctx.fillStyle = "#989865"
+                                ctx.beginPath()
+                                ctx.moveTo(x, y - tile.height)
+                                ctx.lineTo(x + tile.width, y)
+                                ctx.lineTo(x, y + tile.height)
+                                ctx.lineTo(x - tile.width, y)
+                                ctx.closePath()
+                                ctx.fill()
+                                ctx.stroke()
+
+                                //tile left
+                                ctx.fillStyle = "#838357"
+                                ctx.strokeStyle = "#7A7A51"
+                                ctx.beginPath()
+                                ctx.moveTo(x - tile.width, y)
+                                ctx.lineTo(x, y + tile.height)
+                                ctx.lineTo(x, y + tile.height + (tile.height / 2))
+                                ctx.lineTo(x - tile.width, y + (tile.height / 2))
+                                ctx.closePath()
+                                ctx.fill()
+                                ctx.stroke()
+
+                                //tile right
+                                ctx.fillStyle = "#6F6F49"
+                                ctx.strokeStyle = "#676744"
+                                ctx.beginPath()
+                                ctx.moveTo(x, y + tile.height)
+                                ctx.lineTo(x + tile.width, y)
+                                ctx.lineTo(x + tile.width, y + (tile.height / 2))
+                                ctx.lineTo(x, y + tile.height + (tile.height / 2))
+                                ctx.closePath()
+                                ctx.fill()
+                                ctx.stroke()
+
+                            }
+                        }
+                    }
+
+                    //cursor
+                    ctx.strokeStyle = "#FFFFFF"
+                    ctx.lineWidth = 2
+                    if (cursor_x >= 0 && cursor_y >= 0) {
+                        const cur_x = display_x + (cursor_x * (tile.width * 2) - (cursor_x * tile.width) - (cursor_y * tile.width))
+                        const cur_y = display_y + (cursor_y * (tile.height * 2) - (cursor_y * tile.height) + (cursor_x * tile.height) - (room.map[cursor_y][cursor_x] * (tile.height / 2)))
+                        ctx.beginPath()
+                        ctx.moveTo(cur_x, cur_y - tile.height)
+                        ctx.lineTo(cur_x + tile.width, cur_y)
+                        ctx.lineTo(cur_x, cur_y + tile.height)
+                        ctx.lineTo(cur_x - tile.width, cur_y)
+                        ctx.closePath()
+                        ctx.stroke()
+                    }
+
+                    //move player
+                    if (frame_count >= 10) {
+                        frame_count = 0
+                        walking.forEach((walk, index) => {
+                            players.filter(player => {
+                                if (walk.id == player.id) {
+                                    if (walk.step.length) {
+                                        if (player.r > 8) {
+                                            player.r -= 10
+                                        }
+                                        player.y = walk.step[0].x
+                                        player.x = walk.step[0].y
+                                        walk.step.shift()
+                                        if (!walk.step.length) {
+                                            socket.emit("movement", { id: player.id, x: player.x, y: player.y, r: player.r })
+                                            walking.splice(index, 1)
+                                        }
+                                    }
+                                }
+                            })
+                        })
+                    }
+                    else if (frame_count < 10) {
+                        walking.forEach((walk, index) => {
+                            players.filter(player => {
+                                if (walk.id == player.id) {
+                                    if (walk.step.length) {
+                                        const target_x = walk.step[0].y
+                                        const target_y = walk.step[0].x
+                                        const player_x = player.x
+                                        const player_y = player.y
+
+                                        if (player_y < target_y) {
+                                            player.y = player.y + 0.1
+                                        }
+                                        if (player_y > target_y) {
+                                            player.y = player.y - 0.1
+                                        }
+                                        if (player_x < target_x) {
+                                            player.x = player.x + 0.1
+                                        }
+                                        if (player_x > target_x) {
+                                            player.x = player.x - 0.1
+                                        }
+
+                                        if (target_x == player_x && target_y > player_y) {
+                                            player.r = 10
+                                        }
+                                        if (target_x < player_x && target_y > player_y) {
+                                            player.r = 11
+                                        }
+                                        if (target_x < player_x && target_y == player_y) {
+                                            player.r = 12
+                                        }
+                                        if (target_x < player_x && target_y < player_y) {
+                                            player.r = 13
+                                        }
+                                        if (target_x == player_x && target_y < player_y) {
+                                            player.r = 14
+                                        }
+                                        if (target_x > player_x && target_y < player_y) {
+                                            player.r = 15
+                                        }
+                                        if (target_x > player_x && target_y == player_y) {
+                                            player.r = 16
+                                        }
+                                        if (target_x > player_x && target_y > player_y) {
+                                            player.r = 17
+                                        }
+
+                                    }
+                                }
+                            })
+                        })
+                    }
+
+                    //players
+                    players.forEach(player => {
+
+                        const pla_x = display_x + (player.x * (tile.width * 2) - (player.x * tile.width) - (player.y * tile.width))
+                        const pla_y = display_y + (player.y * (tile.height * 2) - (player.y * tile.height) + (player.x * tile.height) - (room.map[Math.floor(player.y)][Math.floor(player.x)] * (tile.height / 2)))
+                        ctx.textAlign = "center";
+                        ctx.fillStyle = "#FFF"
+                        ctx.fillText(player.username, pla_x, pla_y - ((tile.height * 2) * 3) - tile.height)
+
+                        /*ctx.fillStyle = "#00FF00"
+                        ctx.beginPath()
+                        ctx.fillRect(pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, (tile.height * 2) * 3)
+                        ctx.closePath()
+                        ctx.fill()*/
+
+
+
+
+                        let cx = character.width * 6
+                        let cy = character.height * 2
+
+                        if (player.r == 0) {
+                            cx = character.width * 0
+                            cy = character.height * 0
+
+                        }
+                        if (player.r == 1) {
+                            cx = character.width * 5
+                            cy = character.height * 0
+                        }
+                        if (player.r == 2) {
+                            cx = character.width * 10
+                            cy = character.height * 0
+                        }
+                        if (player.r == 3) {
+                            cx = character.width * 0
+                            cy = character.height * 2
+                        }
+                        if (player.r == 4) {
+                            cx = character.width * 10
+                            cy = character.height * 1
+                        }
+                        if (player.r == 5) {
+                            cx = character.width * 5
+                            cy = character.height * 1
+                        }
+                        if (player.r == 6) {
+                            cx = character.width * 0
+                            cy = character.height * 1
+                        }
+                        if (player.r == 7) {
+                            cx = character.width * 5
+                            cy = character.height * 2
+                        }
+
+                        if (player.r == 10) {
+                            cx = character.width * (current_frame + 0)
+                            cy = character.height * 0
+                        }
+                        if (player.r == 11) {
+                            cx = character.width * (current_frame + 5)
+                            cy = character.height * 0
+                        }
+                        if (player.r == 12) {
+                            cx = character.width * (current_frame + 10)
+                            cy = character.height * 0
+                        }
+                        if (player.r == 13) {
+                            cx = character.width * (current_frame + 0)
+                            cy = character.height * 2
+                        }
+                        if (player.r == 14) {
+                            cx = character.width * (current_frame + 10)
+                            cy = character.height * 1
+                        }
+                        if (player.r == 15) {
+                            cx = character.width * (current_frame + 5)
+                            cy = character.height * 1
+                        }
+
+                        if (player.r == 16) {
+                            cx = character.width * (current_frame + 0)
+                            cy = character.height * 1
+                        }
+                        if (player.r == 17) {
+                            cx = character.width * (current_frame + 5)
+                            cy = character.height * 2
+                        }
+                        ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, tile.height * 7);
+                    })
+
+                    //chat for players
+                    chats.forEach((chat, i) => {
+                        //username: data.username, message: data.message, x: data.x 
+                        ctx.textAlign = "start";
+                        ctx.fillStyle = "#FFF"
+                        const chat_len = chat.username + ": " + chat.message
+                        const chat_len2 = ctx.measureText(chat_len).width + 10
+                        ctx.fillRect(20, can.height - (i * 20) - 150, chat_len2, 18)
+                        ctx.fillStyle = "#F00"
+                        ctx.fillText(chat_len, 25, can.height - (i * 20) + 12 - 150)
+                    })
+                }
+
+                requestAnimationFrame(game);
+                frame_count++;
+                //frame adjustment (1 - 10) into 5
+                current_frame = frame_count
+                if (frame_count == 5) {
+                    current_frame = 3;
+                }
+                if (frame_count == 6) {
+                    current_frame = 1;
+                }
+                else if (frame_count == 7) {
+                    current_frame = 2
+                }
+                else if (frame_count == 8) {
+                    current_frame = 3
+                }
+                else if (frame_count == 9) {
+                    current_frame = 4
+                }
+                else if (frame_count == 10) {
+                    current_frame = 3
+                }
+            }
+
+            const update_map = () => {
+                imgmap.innerHTML = "";
+                const map_j = room.map.length
+                for (let j = 0; j < map_j; j++) {
+                    const map_i = room.map[j].length
+                    for (let i = 0; i < map_i; i++) {
+                        if (room.map[j][i]) {
+                            const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
+                            const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+                            const tm1_x = x
+                            const tm1_y = y - tile.height
+                            const tm2_x = x + tile.width
+                            const tm2_y = y
+                            const tm3_x = x
+                            const tm3_y = y + tile.height
+                            const tm4_x = x - tile.width
+                            const tm4_y = y
+                            imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='tile' shape='polygon' coords='" + tm1_x + "," + tm1_y + "," + tm2_x + "," + tm2_y + "," + tm3_x + "," + tm3_y + "," + tm4_x + "," + tm4_y + "'>");
+                        }
+                    }
+                }
+            }
+
+            document.querySelector("#goto_register").addEventListener("click", () => {
+                document.querySelector("#login").style.display = "none"
+                document.querySelector("#register").style.display = "block"
+            })
+
+            document.querySelector("#goto_login").addEventListener("click", () => {
+                document.querySelector("#register").style.display = "none"
+                document.querySelector("#login").style.display = "block"
+            })
+
+            document.querySelector("#do_register").addEventListener("click", () => {
+                const username = document.querySelector("#reg_username").value
+                const email = document.querySelector("#reg_email").value
+                const password = document.querySelector("#reg_password").value
+                const conf_password = document.querySelector("#conf_password").value
+                if (username && email && password && conf_password) {
+                    if (password == conf_password) {
+                        const username_regex = /^[a-zA-Z0-9]+$/
+                        if (username_regex.test(username)) {
+                            const email_regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                            if (email_regex.test(email)) {
+                                socket.emit("register", { username: username, email: email, password: password })
+                            }
+                            else {
+                                alert("Email address not valid")
+                            }
+                        }
+                        else {
+                            alert("Only alphabet (a-z) and numbers (0-9) are allowed for username");
+                        }
+                    }
+                    else {
+                        alert("Confirm password not match")
+                    }
+                }
+                else {
+                    alert("Please fill all form")
+                }
+            })
+
+            document.querySelector("#do_login").addEventListener("click", () => {
+                const username = document.querySelector("#login_username").value
+                const password = document.querySelector("#login_password").value
+
+                if (username && password) {
+                    socket.emit("login", { username: username, password: password })
+                }
+                else {
+                    alert("Please fill all username and password");
+                }
+            })
+
+            document.querySelector("#chat_box").addEventListener("keyup", e => {
+                if (e.which == 13) {
+                    socket.emit("chat", document.querySelector("#chat_box").value)
+                    document.querySelector("#chat_box").value = ""
+                }
+            })
+
+            ////////////// Floating menu draf event //////////////////////
+            // Make the DIV element draggable:
+
+            document.querySelector("#close_room_nav").addEventListener("click", () => {
+                document.querySelector("#room_nav").style.display = "none"
+            })
+            document.querySelector("#close_inventory").addEventListener("click", () => {
+                document.querySelector("#inventory").style.display = "none"
+            })
+            document.querySelector("#close_shop").addEventListener("click", () => {
+                document.querySelector("#shop").style.display = "none"
+            })
+
+            document.querySelector("#open_room_nav").addEventListener("click", () => {
+                document.querySelector("#room_nav").style.display = "block"
+                socket.emit("room_list", { room_type: room_type })
+            })
+            document.querySelector("#open_shop").addEventListener("click", () => {
+                document.querySelector("#shop").style.display = "block"
+
+            })
+            document.querySelector("#open_inventory").addEventListener("click", () => {
+                document.querySelector("#inventory").style.display = "block"
+
+            })
+
+
+            const drag_room_nav = elmnt => {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+                const elementDrag = e => {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // calculate the new cursor position:
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    // set the element's new position:
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                }
+
+                const closeDragElement = () => {
+                    // stop moving when mouse button is released:
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+
+                const dragMouseDown = e => {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // get the mouse cursor position at startup:
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = closeDragElement;
+                    // call a function whenever the cursor moves:
+                    document.onmousemove = elementDrag;
+                }
+
+                if (document.getElementById(elmnt.id + "_header")) {
+                    // if present, the header is where you move the DIV from:
+                    document.getElementById(elmnt.id + "_header").onmousedown = dragMouseDown;
+                } else {
+                    // otherwise, move the DIV from anywhere inside the DIV:
+                    elmnt.onmousedown = dragMouseDown;
+                }
+
+            }
+
+            drag_room_nav(document.querySelector("#room_nav"));
+            drag_room_nav(document.querySelector("#inventory"));
+            drag_room_nav(document.querySelector("#shop"));
+
+            /////////////////////////////////////////////////
+
+            window.addEventListener("resize", () => {
+                can.width = window.innerWidth
+                can.height = window.innerHeight
+            })
+
+            //experiment copypaste
+            let mousedown = false
+            let temp_x = 0
+            let temp_y = 0
+
+            touch_screen.addEventListener("mousedown", e => {
+                console.log("Mouse down")
+                mousedown = true
+                temp_x = display_x - e.pageX
+                temp_y = display_y - e.pageY
+            });
+
+            touch_screen.addEventListener("touchstart", e => {
+                mousedown = true
+                temp_x = display_x - e.touches[0].clientX
+                temp_y = display_y - e.touches[0].clientY
+            })
+
+            touch_screen.addEventListener("mouseup", () => {
+                mousedown = false
+                update_map()
+            });
+            touch_screen.addEventListener("touchend", () => {
+                mousedown = false
+                update_map()
+            });
+            touch_screen.addEventListener("touchcancel", () => {
+                mousedown = false
+                update_map()
+            });
+
+            touch_screen.addEventListener("mousemove", e => {
+                if (mousedown) {
+                    display_x = e.pageX + temp_x
+                    display_y = e.pageY + temp_y
+                }
+            });
+
+            touch_screen.addEventListener("touchmove", e => {
+                if (mousedown) {
+                    display_x = e.touches[0].clientX + temp_x;
+                    display_y = e.touches[0].clientY + temp_y;
+                }
+            });
+
+            //sencond part
+
+            let is_click = true;
+
+            document.addEventListener("mousedown", e => {
+                if (e.target.className == "tile") {
+                    is_click = true;
+                    mousedown = true;
+                    temp_x = display_x - e.pageX;
+                    temp_y = display_y - e.pageY;
+                }
+            });
+
+            document.addEventListener("touchstart", e => {
+                if (e.target.className == "tile") {
+                    is_click = true;
+                    mousedown = true;
+                    temp_x = display_x - e.touches[0].clientX;
+                    temp_y = display_y - e.touches[0].clientY;
+                }
+            });
+
+            document.addEventListener("mouseup", e => {
+                if (e.target.className == "tile") {
+                    if (is_click) {
+                        console.log("Is click");
+                        socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
+                        console.log("x: " + e.target.getAttribute("x"), "y: " + e.target.getAttribute("y"))
+                    } else {
+                        console.log("IS drag");
+                    }
+                    mousedown = false;
+                    update_map();
+                }
+            });
+
+            document.addEventListener("touchend", e => {
+                if (e.target.className == "tile") {
+                    if (is_click) {
+                        console.log("Is click");
+                    } else {
+                        console.log("IS drag");
+                    }
+                    mousedown = false;
+                    update_map();
+                    cursor_x = e.target.getAttribute("x");
+                    cursor_y = e.target.getAttribute("y");
+                }
+            });
+
+            document.addEventListener("touchcancel", e => {
+                if (e.target.className == "tile") {
+                    mousedown = false;
+                    update_map();
+                }
+            });
+
+            document.addEventListener("mousemove", e => {
+                if (e.target.className == "tile") {
+                    if (mousedown) {
+                        is_click = false;
+                        display_x = e.pageX + temp_x;
+                        display_y = e.pageY + temp_y;
+                    }
+                    else {
+                        cursor_x = e.target.getAttribute("x");
+                        cursor_y = e.target.getAttribute("y");
+                    }
+                }
+            });
+
+            document.addEventListener("touchmove", e => {
+                if (e.target.className == "tile") {
+                    if (mousedown) {
+                        is_click = false;
+                        display_x = e.touches[0].clientX + temp_x;
+                        display_y = e.touches[0].clientY + temp_y;
+                    }
+                }
+            });
+
+            document.querySelectorAll(".room_nav_type").forEach(el => {
+                document.querySelector(".room_list").innerHTML = "Loading..."
+                el.addEventListener("click", () => {
+                    document.querySelectorAll(".room_nav_type").forEach(e => {
+                        e.classList.remove("active_room_nav");
+                    })
+                    el.classList.add("active_room_nav");
+                    room_type = el.getAttribute("data")
+                    socket.emit("room_list", { room_type: room_type })
+                })
+            })
+
+            document.addEventListener("click", el => {
+                el.target.classList.forEach(e => {
+                    if (e == "goto_room") {
+                        console.log("goto_room? ", el.target.getAttribute("data"))
+                        socket.emit("goto", { room: el.target.getAttribute("data") })
+                        document.querySelector("#room_nav").style.display = "none"
+                    }
+                })
+            })
+
+            //end
+            socket.on('disconnect', () => {
+                alert("Disconnected...")
+                location.reload();
+            });
+            socket.on("message", (data) => {
+                if (data.type == "error_message") {
+                    alert("Error: " + data.message)
+                }
+                else if (data.type == "succes_register") {
+                    document.querySelector("#register").style.display = "none"
+                    document.querySelector("#login").style.display = "block"
+                    alert("Success: " + data.message)
+                    document.querySelector("#reg_username").value = ""
+                    document.querySelector("#reg_email").value = ""
+                    document.querySelector("#reg_password").value = ""
+                    document.querySelector("#conf_password").value = ""
+                }
+                else if (data.type == "success_login") {
+                    document.querySelector("#form").style.display = "none"
+                    document.querySelectorAll(".in_client").forEach(item => {
+                        item.style.display = "block"
+                    })
+                    my_username = data.username
+                    my_coins = data.coins
+                    start()
+                }
+            })
+
+            socket.on("room", (data) => {
+                data_map = JSON.parse(data.map)
+                data_door = JSON.parse(data.door)
+                room.name = data.name
+                room.map = data_map
+                graph = new Graph(room.map, { diagonal: true })
+                //move.length = 0
+                walking.length = 0
+                room.door_x = data_door[0]
+                room.door_y = data_door[1]
+                display_x = (window.innerWidth / 2) - ((tile_width / 2) * room.door_x) - ((tile_width / 2) * room.door_y);
+                display_y = (window.innerHeight / 2) - ((tile_width / 4) * room.door_y) + ((tile_width / 4) * room.door_x);
+                update_map();
+            })
+
+            socket.on("player_update", (data) => {
+                players = data
+                console.log("PLayer update: ", players)
+            })
+
+            socket.on("chat", data => {
+                chats.unshift({ username: data.username, message: data.message, x: data.x })
+            })
+
+            socket.on("move", data => {
+                players.filter(player => {
+                    if (player.id == data.id) {
+                        if (data.x != player.x || data.y != player.y) {
+                            const userMoving = walking.some(player => { return player.id == data.id })
+                            if (!userMoving) {
+                                //if no movement made by this player...
+                                const start = graph.grid[player.y][player.x]
+                                const end = graph.grid[data.y][data.x]
+                                const result = astar.search(graph, start, end)
+                                if (result) {
+                                    const path = [];
+                                    const res_len = result.length;
+                                    for (let i = 0; i < res_len; i++) {
+                                        const par = { x: result[i].parent.x, y: result[i].parent.y }
+                                        path.push({ x: result[i].x, y: result[i].y, parent: par });
+                                    }
+                                    walking.push({ id: player.id, step: path });
+                                }
+                            }
+                            else {
+                                //player already have moving, check is walking or not here?
+                                const start = graph.grid[Math.floor(player.y)][Math.floor(player.x)]
+                                const end = graph.grid[data.y][data.x]
+                                const result = astar.search(graph, start, end)
+                                if (result.length) {
+                                    walking.filter(walk => {
+                                        if (walk.id == data.id) {
+                                            players.filter(player => {
+                                                if (data.id == player.id) {
+                                                    try {
+                                                        player.x = walk.step[0].parent.y
+                                                        player.y = walk.step[0].parent.x
+                                                        walk.step = result
+                                                    }
+                                                    catch {
+
+                                                    }
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            }
+                        }
+                    }
+                })
+            })
+
+            socket.on("room_list", data => {
+                document.querySelector(".room_list").innerHTML = "";
+                data.forEach(room => {
+                    if (room.users) {
+                        document.querySelector(".room_list").insertAdjacentHTML("beforeend", "<div class='room_list_item goto_room' data='" + room.id + "'><div class='room_list_users goto_room' data='" + room.id + "'>" + room.users + "</div><div class='room_list_name goto_room' data='" + room.id + "'>" + room.name + "</div></div>")
+                    }
+                    else {
+                        document.querySelector(".room_list").insertAdjacentHTML("beforeend", "<div class='room_list_item goto_room' data='" + room.id + "'><div class='room_list_users1 goto_room' data='" + room.id + "'>" + room.users + "</div><div class='room_list_name goto_room' data='" + room.id + "'>" + room.name + "</div></div>")
+                    }
+                })
+            })
+
+        })()
+    </script>
+</body>
+
+</html>

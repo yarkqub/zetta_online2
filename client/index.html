@@ -362,9 +362,9 @@
             let my_username = ""
             let my_coins = ""
 
-            const fps = 15
-            let frameCount = 0
-            let fpsInterval, startTime, now, then, elapsed
+            //const fps = 15
+            //let frameCount = 0
+            //let fpsInterval, startTime, now, then, elapsed
 
             let room_type = "public"
 
@@ -412,12 +412,13 @@
                 imgmap.style.zIndex = "3"
                 document.body.insertBefore(imgmap, document.body.childNodes[0]);
 
-                fpsInterval = 1000 / fps;
-                then = performance.now();
-                startTime = then
+                //fpsInterval = 1000 / fps;
+                //then = performance.now();
+                //startTime = then
                 stats = new Stats();
                 stats.showPanel(0)
                 document.body.appendChild(stats.dom);
+
                 game()
 
 
@@ -426,113 +427,119 @@
             //count test~ make the count half
             let frame_count = 0
             let current_frame = 0
+            let fps_time = Date.now()
 
             //game that will loop forever
             const game = () => {
+                //now = performance.now();
+                //elapsed = now - then;
+                //if (elapsed > fpsInterval) {
+                stats.begin()
+                //frame_count++
+                //then = now - (elapsed % fpsInterval);
+                // TESTING...Report #seconds since start and achieved fps.
+                //const sinceStart = now - startTime;
+                //const currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
+                //$results.text("Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.");
 
-                now = performance.now();
-                elapsed = now - then;
-                if (elapsed > fpsInterval) {
-                    stats.begin()
-                    //frame_count++
-                    then = now - (elapsed % fpsInterval);
-                    // TESTING...Report #seconds since start and achieved fps.
-                    const sinceStart = now - startTime;
-                    const currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
-                    //$results.text("Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.");
+                ctx.fillStyle = "#000000"
+                ctx.fillRect(0, 0, can.width, can.height)
 
-                    ctx.fillStyle = "#000000"
-                    ctx.fillRect(0, 0, can.width, can.height)
+                ctx.font = "15px Arial"
+                ctx.textAlign = "end";
+                ctx.fillStyle = "#FFD700"
+                ctx.fillText(my_username, can.width - 20, 40)
+                ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
 
-                    ctx.font = "15px Arial"
-                    ctx.textAlign = "end";
-                    ctx.fillStyle = "#FFD700"
-                    ctx.fillText(my_username, can.width - 20, 40)
-                    ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
+                ctx.fillStyle = "#F00"
+                ctx.font = "12px Arial"
+                ctx.textAlign = "start";
+                ctx.fillText("Zetta Online [v0.04] | Room: " + room.name + " | " + fps_time, 100, 20)
 
-                    ctx.fillStyle = "#F00"
-                    ctx.font = "12px Arial"
-                    ctx.textAlign = "start";
-                    ctx.fillText("Zetta Online [v0.04] | Room: " + room.name + " | ?" + currentFps, 20, 20)
+                ctx.strokeStyle = "#8E8E5E"
+                ctx.fillStyle = "#989865"
 
-                    ctx.strokeStyle = "#8E8E5E"
-                    ctx.fillStyle = "#989865"
+                const map_j = room.map.length
+                for (let j = 0; j < map_j; j++) {
+                    const map_i = room.map[j].length
+                    for (let i = 0; i < map_i; i++) {
+                        if (room.map[j][i]) {
+                            const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
+                            const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+                            const ys = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height))
 
-                    const map_j = room.map.length
-                    for (let j = 0; j < map_j; j++) {
-                        const map_i = room.map[j].length
-                        for (let i = 0; i < map_i; i++) {
-                            if (room.map[j][i]) {
-                                const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
-                                const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
-                                const ys = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height))
+                            //tile shadow when height
+                            ctx.fillStyle = "#555";
+                            ctx.beginPath()
+                            ctx.moveTo(x, ys - tile.height)
+                            ctx.lineTo(x + tile.width, ys)
+                            ctx.lineTo(x, ys + tile.height)
+                            ctx.lineTo(x - tile.width, ys)
+                            ctx.closePath()
+                            ctx.fill()
 
-                                //tile shadow when height
-                                ctx.fillStyle = "#555";
-                                ctx.beginPath()
-                                ctx.moveTo(x, ys - tile.height)
-                                ctx.lineTo(x + tile.width, ys)
-                                ctx.lineTo(x, ys + tile.height)
-                                ctx.lineTo(x - tile.width, ys)
-                                ctx.closePath()
-                                ctx.fill()
+                            //tile surface
+                            ctx.strokeStyle = "#8E8E5E"
+                            ctx.fillStyle = "#989865"
+                            ctx.beginPath()
+                            ctx.moveTo(x, y - tile.height)
+                            ctx.lineTo(x + tile.width, y)
+                            ctx.lineTo(x, y + tile.height)
+                            ctx.lineTo(x - tile.width, y)
+                            ctx.closePath()
+                            ctx.fill()
+                            ctx.stroke()
 
-                                //tile surface
-                                ctx.strokeStyle = "#8E8E5E"
-                                ctx.fillStyle = "#989865"
-                                ctx.beginPath()
-                                ctx.moveTo(x, y - tile.height)
-                                ctx.lineTo(x + tile.width, y)
-                                ctx.lineTo(x, y + tile.height)
-                                ctx.lineTo(x - tile.width, y)
-                                ctx.closePath()
-                                ctx.fill()
-                                ctx.stroke()
+                            //tile left
+                            ctx.fillStyle = "#838357"
+                            ctx.strokeStyle = "#7A7A51"
+                            ctx.beginPath()
+                            ctx.moveTo(x - tile.width, y)
+                            ctx.lineTo(x, y + tile.height)
+                            ctx.lineTo(x, y + tile.height + (tile.height / 2))
+                            ctx.lineTo(x - tile.width, y + (tile.height / 2))
+                            ctx.closePath()
+                            ctx.fill()
+                            ctx.stroke()
 
-                                //tile left
-                                ctx.fillStyle = "#838357"
-                                ctx.strokeStyle = "#7A7A51"
-                                ctx.beginPath()
-                                ctx.moveTo(x - tile.width, y)
-                                ctx.lineTo(x, y + tile.height)
-                                ctx.lineTo(x, y + tile.height + (tile.height / 2))
-                                ctx.lineTo(x - tile.width, y + (tile.height / 2))
-                                ctx.closePath()
-                                ctx.fill()
-                                ctx.stroke()
+                            //tile right
+                            ctx.fillStyle = "#6F6F49"
+                            ctx.strokeStyle = "#676744"
+                            ctx.beginPath()
+                            ctx.moveTo(x, y + tile.height)
+                            ctx.lineTo(x + tile.width, y)
+                            ctx.lineTo(x + tile.width, y + (tile.height / 2))
+                            ctx.lineTo(x, y + tile.height + (tile.height / 2))
+                            ctx.closePath()
+                            ctx.fill()
+                            ctx.stroke()
 
-                                //tile right
-                                ctx.fillStyle = "#6F6F49"
-                                ctx.strokeStyle = "#676744"
-                                ctx.beginPath()
-                                ctx.moveTo(x, y + tile.height)
-                                ctx.lineTo(x + tile.width, y)
-                                ctx.lineTo(x + tile.width, y + (tile.height / 2))
-                                ctx.lineTo(x, y + tile.height + (tile.height / 2))
-                                ctx.closePath()
-                                ctx.fill()
-                                ctx.stroke()
-
-                            }
                         }
                     }
+                }
 
-                    //cursor
-                    ctx.strokeStyle = "#FFFFFF"
-                    ctx.lineWidth = 2
-                    if (cursor_x >= 0 && cursor_y >= 0) {
-                        const cur_x = display_x + (cursor_x * (tile.width * 2) - (cursor_x * tile.width) - (cursor_y * tile.width))
-                        const cur_y = display_y + (cursor_y * (tile.height * 2) - (cursor_y * tile.height) + (cursor_x * tile.height) - (room.map[cursor_y][cursor_x] * (tile.height / 2)))
-                        ctx.beginPath()
-                        ctx.moveTo(cur_x, cur_y - tile.height)
-                        ctx.lineTo(cur_x + tile.width, cur_y)
-                        ctx.lineTo(cur_x, cur_y + tile.height)
-                        ctx.lineTo(cur_x - tile.width, cur_y)
-                        ctx.closePath()
-                        ctx.stroke()
-                    }
+                //cursor
+                ctx.strokeStyle = "#FFFFFF"
+                ctx.lineWidth = 2
+                if (cursor_x >= 0 && cursor_y >= 0) {
+                    const cur_x = display_x + (cursor_x * (tile.width * 2) - (cursor_x * tile.width) - (cursor_y * tile.width))
+                    const cur_y = display_y + (cursor_y * (tile.height * 2) - (cursor_y * tile.height) + (cursor_x * tile.height) - (room.map[cursor_y][cursor_x] * (tile.height / 2)))
+                    ctx.beginPath()
+                    ctx.moveTo(cur_x, cur_y - tile.height)
+                    ctx.lineTo(cur_x + tile.width, cur_y)
+                    ctx.lineTo(cur_x, cur_y + tile.height)
+                    ctx.lineTo(cur_x - tile.width, cur_y)
+                    ctx.closePath()
+                    ctx.stroke()
+                }
 
-                    //move player
+                //move player
+                let now = Date.now()
+                let then = fps_time + (1000/10)
+                if (now >= then) {
+                    fps_time = now
+                    frame_count++
+
                     if (frame_count >= 10) {
                         frame_count = 0
                         walking.forEach((walk, index) => {
@@ -607,121 +614,122 @@
                             })
                         })
                     }
-
-                    //players
-                    players.forEach(player => {
-
-                        const pla_x = display_x + (player.x * (tile.width * 2) - (player.x * tile.width) - (player.y * tile.width))
-                        const pla_y = display_y + (player.y * (tile.height * 2) - (player.y * tile.height) + (player.x * tile.height) - (room.map[Math.floor(player.y)][Math.floor(player.x)] * (tile.height / 2)))
-                        ctx.textAlign = "center";
-                        ctx.fillStyle = "#FFF"
-                        ctx.fillText(player.username, pla_x, pla_y - ((tile.height * 2) * 3) - tile.height)
-
-                        /*ctx.fillStyle = "#00FF00"
-                        ctx.beginPath()
-                        ctx.fillRect(pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, (tile.height * 2) * 3)
-                        ctx.closePath()
-                        ctx.fill()*/
-
-
-
-
-                        let cx = character.width * 6
-                        let cy = character.height * 2
-
-                        if (player.r == 0) {
-                            cx = character.width * 0
-                            cy = character.height * 0
-
-                        }
-                        if (player.r == 1) {
-                            cx = character.width * 5
-                            cy = character.height * 0
-                        }
-                        if (player.r == 2) {
-                            cx = character.width * 10
-                            cy = character.height * 0
-                        }
-                        if (player.r == 3) {
-                            cx = character.width * 0
-                            cy = character.height * 2
-                        }
-                        if (player.r == 4) {
-                            cx = character.width * 10
-                            cy = character.height * 1
-                        }
-                        if (player.r == 5) {
-                            cx = character.width * 5
-                            cy = character.height * 1
-                        }
-                        if (player.r == 6) {
-                            cx = character.width * 0
-                            cy = character.height * 1
-                        }
-                        if (player.r == 7) {
-                            cx = character.width * 5
-                            cy = character.height * 2
-                        }
-
-                        if (player.r == 10) {
-                            cx = character.width * (current_frame + 0)
-                            cy = character.height * 0
-                        }
-                        if (player.r == 11) {
-                            cx = character.width * (current_frame + 5)
-                            cy = character.height * 0
-                        }
-                        if (player.r == 12) {
-                            cx = character.width * (current_frame + 10)
-                            cy = character.height * 0
-                        }
-                        if (player.r == 13) {
-                            cx = character.width * (current_frame + 0)
-                            cy = character.height * 2
-                        }
-                        if (player.r == 14) {
-                            cx = character.width * (current_frame + 10)
-                            cy = character.height * 1
-                        }
-                        if (player.r == 15) {
-                            cx = character.width * (current_frame + 5)
-                            cy = character.height * 1
-                        }
-
-                        if (player.r == 16) {
-                            cx = character.width * (current_frame + 0)
-                            cy = character.height * 1
-                        }
-                        if (player.r == 17) {
-                            cx = character.width * (current_frame + 5)
-                            cy = character.height * 2
-                        }
-                        ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, tile.height * 7);
-                    })
-
-                    //chat for players
-                    chats.forEach((chat, i) => {
-                        //username: data.username, message: data.message, x: data.x 
-                        ctx.textAlign = "start";
-                        ctx.fillStyle = "#FFF"
-                        const chat_len = chat.username + ": " + chat.message
-                        const chat_len2 = ctx.measureText(chat_len).width + 10
-                        ctx.fillRect(20, can.height - (i * 20) - 150, chat_len2, 18)
-                        ctx.fillStyle = "#F00"
-                        ctx.fillText(chat_len, 25, can.height - (i * 20) + 12 - 150)
-                        //bubble chat
-                        const pla_x = display_x + (chat.x * (tile.width * 2) - (chat.x * tile.width) - (chat.y * tile.width))
-                        ctx.textAlign = "center";
-                        ctx.fillStyle = "#FFF"
-                        ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
-                        ctx.fillStyle = "#000"
-                        ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
-                    })
                 }
+
+                //players
+                players.forEach(player => {
+
+                    const pla_x = display_x + (player.x * (tile.width * 2) - (player.x * tile.width) - (player.y * tile.width))
+                    const pla_y = display_y + (player.y * (tile.height * 2) - (player.y * tile.height) + (player.x * tile.height) - (room.map[Math.floor(player.y)][Math.floor(player.x)] * (tile.height / 2)))
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "#FFF"
+                    ctx.fillText(player.username, pla_x, pla_y - ((tile.height * 2) * 3) - tile.height)
+
+                    /*ctx.fillStyle = "#00FF00"
+                    ctx.beginPath()
+                    ctx.fillRect(pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, (tile.height * 2) * 3)
+                    ctx.closePath()
+                    ctx.fill()*/
+
+
+
+
+                    let cx = character.width * 6
+                    let cy = character.height * 2
+
+                    if (player.r == 0) {
+                        cx = character.width * 0
+                        cy = character.height * 0
+
+                    }
+                    if (player.r == 1) {
+                        cx = character.width * 5
+                        cy = character.height * 0
+                    }
+                    if (player.r == 2) {
+                        cx = character.width * 10
+                        cy = character.height * 0
+                    }
+                    if (player.r == 3) {
+                        cx = character.width * 0
+                        cy = character.height * 2
+                    }
+                    if (player.r == 4) {
+                        cx = character.width * 10
+                        cy = character.height * 1
+                    }
+                    if (player.r == 5) {
+                        cx = character.width * 5
+                        cy = character.height * 1
+                    }
+                    if (player.r == 6) {
+                        cx = character.width * 0
+                        cy = character.height * 1
+                    }
+                    if (player.r == 7) {
+                        cx = character.width * 5
+                        cy = character.height * 2
+                    }
+
+                    if (player.r == 10) {
+                        cx = character.width * (current_frame + 0)
+                        cy = character.height * 0
+                    }
+                    if (player.r == 11) {
+                        cx = character.width * (current_frame + 5)
+                        cy = character.height * 0
+                    }
+                    if (player.r == 12) {
+                        cx = character.width * (current_frame + 10)
+                        cy = character.height * 0
+                    }
+                    if (player.r == 13) {
+                        cx = character.width * (current_frame + 0)
+                        cy = character.height * 2
+                    }
+                    if (player.r == 14) {
+                        cx = character.width * (current_frame + 10)
+                        cy = character.height * 1
+                    }
+                    if (player.r == 15) {
+                        cx = character.width * (current_frame + 5)
+                        cy = character.height * 1
+                    }
+
+                    if (player.r == 16) {
+                        cx = character.width * (current_frame + 0)
+                        cy = character.height * 1
+                    }
+                    if (player.r == 17) {
+                        cx = character.width * (current_frame + 5)
+                        cy = character.height * 2
+                    }
+                    ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, tile.height * 7);
+                })
+
+                //chat for players
+                chats.forEach((chat, i) => {
+                    //username: data.username, message: data.message, x: data.x 
+                    ctx.textAlign = "start";
+                    ctx.fillStyle = "#FFF"
+                    const chat_len = chat.username + ": " + chat.message
+                    const chat_len2 = ctx.measureText(chat_len).width + 10
+                    ctx.fillRect(20, can.height - (i * 20) - 150, chat_len2, 18)
+                    ctx.fillStyle = "#F00"
+                    ctx.fillText(chat_len, 25, can.height - (i * 20) + 12 - 150)
+                    //bubble chat
+                    const pla_x = display_x + (chat.x * (tile.width * 2) - (chat.x * tile.width) - (chat.y * tile.width))
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "#FFF"
+                    ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
+                    ctx.fillStyle = "#000"
+                    ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
+                })
+                // }
 
                 stats.end()
                 requestAnimationFrame(game);
-                frame_count++;
+                //frame_count++;
                 //frame adjustment (1 - 10) into 5
                 current_frame = frame_count
                 if (frame_count == 5) {

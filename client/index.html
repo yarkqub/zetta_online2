@@ -415,11 +415,12 @@
                 fpsInterval = 1000 / fps;
                 then = performance.now();
                 startTime = then
+                stats = new Stats();
+                stats.showPanel(0)
+                document.body.appendChild(stats.dom);
                 game()
 
-                stats = new Stats();
-            stats.showPanel(0)
-            document.body.appendChild(stats.dom);
+
             }
 
             //count test~ make the count half
@@ -428,7 +429,7 @@
 
             //game that will loop forever
             const game = () => {
-                
+
                 now = performance.now();
                 elapsed = now - then;
                 if (elapsed > fpsInterval) {

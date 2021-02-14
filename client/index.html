@@ -7,6 +7,7 @@
     <title>Zetta Online</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="astar.js"></script>
+    <script src="stats.js/build/stats.js"></script>
     <style>
         * {
             margin: 0px;
@@ -338,6 +339,10 @@
         (() => {
             const socket = io()
 
+            let stats = new Stats();
+            stats.showPanel(0)
+            document.body.appendChild(stats.dom);
+
             const can = document.querySelector("#can")
             const ctx = can.getContext("2d", { alpha: false })
             const tile_width = 64
@@ -421,7 +426,7 @@
 
             //game that will loop forever
             const game = () => {
-
+                stats.begin()
                 now = performance.now();
                 elapsed = now - then;
                 if (elapsed > fpsInterval) {
@@ -710,6 +715,7 @@
                     })
                 }
 
+                stats.end()
                 requestAnimationFrame(game);
                 frame_count++;
                 //frame adjustment (1 - 10) into 5

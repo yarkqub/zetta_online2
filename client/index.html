@@ -339,9 +339,7 @@
         (() => {
             const socket = io()
 
-            let stats = new Stats();
-            stats.showPanel(0)
-            document.body.appendChild(stats.dom);
+            let stats
 
             const can = document.querySelector("#can")
             const ctx = can.getContext("2d", { alpha: false })
@@ -418,6 +416,10 @@
                 then = performance.now();
                 startTime = then
                 game()
+
+                stats = new Stats();
+            stats.showPanel(0)
+            document.body.appendChild(stats.dom);
             }
 
             //count test~ make the count half

@@ -426,10 +426,11 @@
 
             //game that will loop forever
             const game = () => {
-                stats.begin()
+                
                 now = performance.now();
                 elapsed = now - then;
                 if (elapsed > fpsInterval) {
+                    stats.begin()
                     //frame_count++
                     then = now - (elapsed % fpsInterval);
                     // TESTING...Report #seconds since start and achieved fps.

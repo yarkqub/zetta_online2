@@ -357,14 +357,9 @@
             let display_y = window.innerHeight / 2
             let players = []
             let chats = []
-            //let move = []
             const walking = [];
             let my_username = ""
             let my_coins = ""
-
-            //const fps = 15
-            //let frameCount = 0
-            //let fpsInterval, startTime, now, then, elapsed
 
             let room_type = "public"
 
@@ -382,23 +377,23 @@
 
             //player image
             const char_image = new Image()
-            //char_image.src = "characters/spaghetti_atlas_05.png"
             char_image.src = "characters/character_sprite.png"
             const character = {
                 width: 64,
                 height: 110
             }
-            /*const character = {
-                width: 2040 / 24,
-                height: 510 / 3
-            }*/
 
-
+            //canvas width and height
             can.width = window.innerWidth
             can.height = window.innerHeight
 
+            //animation settings
+            let frame_count = 0
+            let current_frame = 0
+            let fps_time = Date.now()
+
+            //initiate game settings...
             const start = () => {
-                //interval = setInterval(game, 15 / 1000)
                 can.style.zIndex = "1"
                 touch_screen.style.width = "100%"
                 touch_screen.style.height = "100%"
@@ -412,53 +407,39 @@
                 imgmap.style.zIndex = "3"
                 document.body.insertBefore(imgmap, document.body.childNodes[0]);
 
-                //fpsInterval = 1000 / fps;
-                //then = performance.now();
-                //startTime = then
+                //fps display
                 stats = new Stats();
                 stats.showPanel(0)
                 document.body.appendChild(stats.dom);
 
                 game()
-
-
             }
 
-            //count test~ make the count half
-            let frame_count = 0
-            let current_frame = 0
-            let fps_time = Date.now()
-
-            //game that will loop forever
+            //main game loop function
             const game = () => {
-                //now = performance.now();
-                //elapsed = now - then;
-                //if (elapsed > fpsInterval) {
-                stats.begin()
-                //frame_count++
-                //then = now - (elapsed % fpsInterval);
-                // TESTING...Report #seconds since start and achieved fps.
-                //const sinceStart = now - startTime;
-                //const currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
-                //$results.text("Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.");
 
+                stats.begin()
+
+                //clear canvas
                 ctx.fillStyle = "#000000"
                 ctx.fillRect(0, 0, can.width, can.height)
 
+                //name and coins for top right display
                 ctx.font = "15px Arial"
                 ctx.textAlign = "end";
-                ctx.fillStyle = "#FFD700"
+                ctx.fillStyle = "#FFFFFF"
                 ctx.fillText(my_username, can.width - 20, 40)
+                ctx.fillStyle = "#FFD700"
                 ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
 
-                ctx.fillStyle = "#F00"
-                ctx.font = "12px Arial"
+                ctx.fillStyle = "#FAA"
+                ctx.font = "14px Arial"
                 ctx.textAlign = "start";
-                ctx.fillText("Zetta Online [v0.04] | Room: " + room.name + " | " + fps_time, 100, 20)
+                ctx.fillText("Zetta Online [v0.06] | Room: " + room.name + " |", 100, 20)
 
+                //draw map
                 ctx.strokeStyle = "#8E8E5E"
                 ctx.fillStyle = "#989865"
-
                 const map_j = room.map.length
                 for (let j = 0; j < map_j; j++) {
                     const map_i = room.map[j].length
@@ -513,7 +494,6 @@
                             ctx.closePath()
                             ctx.fill()
                             ctx.stroke()
-
                         }
                     }
                 }
@@ -535,7 +515,7 @@
 
                 //move player
                 let now = Date.now()
-                let then = fps_time + (1000/10)
+                let then = fps_time + (1000 / 10)
                 if (now >= then) {
                     fps_time = now
                     frame_count++
@@ -618,22 +598,12 @@
 
                 //players
                 players.forEach(player => {
-
                     const pla_x = display_x + (player.x * (tile.width * 2) - (player.x * tile.width) - (player.y * tile.width))
                     const pla_y = display_y + (player.y * (tile.height * 2) - (player.y * tile.height) + (player.x * tile.height) - (room.map[Math.floor(player.y)][Math.floor(player.x)] * (tile.height / 2)))
                     ctx.textAlign = "center";
                     ctx.fillStyle = "#FFF"
-                    ctx.fillText(player.username, pla_x, pla_y - ((tile.height * 2) * 3) - tile.height)
-
-                    /*ctx.fillStyle = "#00FF00"
-                    ctx.beginPath()
-                    ctx.fillRect(pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, (tile.height * 2) * 3)
-                    ctx.closePath()
-                    ctx.fill()*/
-
-
-
-
+                    ctx.fillText(player.username, pla_x, pla_y - character.height)
+                    
                     let cx = character.width * 6
                     let cy = character.height * 2
 
@@ -704,12 +674,11 @@
                         cx = character.width * (current_frame + 5)
                         cy = character.height * 2
                     }
-                    ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - ((tile.height * 2) * 3), tile.width * 2, tile.height * 7);
+                    ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - character.height + (tile.height/2), tile.width * 2, character.height)
                 })
 
                 //chat for players
                 chats.forEach((chat, i) => {
-                    //username: data.username, message: data.message, x: data.x 
                     ctx.textAlign = "start";
                     ctx.fillStyle = "#FFF"
                     const chat_len = chat.username + ": " + chat.message
@@ -725,12 +694,8 @@
                     ctx.fillStyle = "#000"
                     ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
                 })
-                // }
 
-                stats.end()
-                requestAnimationFrame(game);
-                //frame_count++;
-                //frame adjustment (1 - 10) into 5
+                //animation frame adjustment
                 current_frame = frame_count
                 if (frame_count == 5) {
                     current_frame = 3;
@@ -750,6 +715,9 @@
                 else if (frame_count == 10) {
                     current_frame = 3
                 }
+
+                stats.end()
+                requestAnimationFrame(game);
             }
 
             const update_map = () => {

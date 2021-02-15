@@ -46,8 +46,9 @@ io.on('connection', (socket) => {
             })
 
             if (typeof (socket.my_room) == "undefined") {
-                // not from any room, just entered this room
+                // not from any room, just entered this room / No room to unload
                 if (room_loaded) {
+                    //if room already exist (have player in it)
                     loaded_rooms.filter(room => {
                         if (room.id == rid) {
                             room.users++
@@ -55,6 +56,7 @@ io.on('connection', (socket) => {
                     })
                 }
                 else {
+                    //room already have plyr in it
                     loaded_rooms.push({ id: rid, name: res.name, users: 1 });
                 }
 
@@ -172,7 +174,7 @@ io.on('connection', (socket) => {
                     bcrypt.compare(data.password, res.password, (err, res1) => {
                         if (res1) {
                             socket.emit("message", { type: "success_login", message: "Logged in...", username: res.username, coins: res.coins })
-                            players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0 })
+                            players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0, step: 0})
                             join_room("1");
                         }
                         else {

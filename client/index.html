@@ -516,10 +516,10 @@
                 //move player
                 let now = Date.now()
                 let then = fps_time + (1000 / 10)
+                //let then = fps_time + 2000
                 if (now >= then) {
-                    fps_time = now
                     frame_count++
-
+                    fps_time = now
                     if (frame_count >= 10) {
                         frame_count = 0
                         walking.forEach((walk, index) => {

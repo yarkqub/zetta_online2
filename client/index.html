@@ -521,6 +521,9 @@
                     fps_time = now
                     //animate the walking array
                     walking.forEach((walk, index) => {
+
+                        players.sort((a, b) => { return a.x - b.x })
+
                         players.filter(player => {
                             if (walk.id == player.id) {
                                 if (walk.step.length) {

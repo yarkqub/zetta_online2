@@ -337,6 +337,9 @@
 
     <script>
         (() => {
+
+            console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c0.08 ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
+
             const socket = io()
 
             let stats
@@ -374,6 +377,8 @@
                 door_x: 0,
                 door_y: 0
             }
+
+            let typing = false;
 
             //player image
             const char_image = new Image()
@@ -435,7 +440,7 @@
                 ctx.fillStyle = "#FAA"
                 ctx.font = "14px Arial"
                 ctx.textAlign = "start";
-                ctx.fillText("Zetta Online [v0.07] | Room: " + room.name + " |", 100, 20)
+                ctx.fillText("Zetta Online [v0.8] | Room: " + room.name + " |", 100, 20)
 
                 //draw map
                 ctx.strokeStyle = "#8E8E5E"
@@ -679,6 +684,34 @@
                         cy = character.height * 2
                     }
                     ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - character.height + (tile.height / 2), tile.width * 2, character.height)
+
+                    //typing status
+                    if (player.typing) {
+                        ctx.strokeStyle = "#000"
+                        ctx.beginPath()
+                        ctx.ellipse(pla_x + tile.width - 5, pla_y - (tile.height * 4) - 10, 11, 7, 0, 0, 2 * Math.PI)
+                        ctx.closePath()
+                        ctx.stroke()
+                        ctx.fill()
+                        ctx.beginPath()
+                        ctx.moveTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 7 - 10)
+                        ctx.lineTo(pla_x + tile.width - 1 - 5, pla_y - (tile.height * 4) + 7 - 10)
+                        ctx.lineTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 11 - 10)
+                        ctx.closePath()
+                        ctx.stroke()
+                        ctx.fill()
+                        ctx.strokeStyle = "#FFF"
+                        ctx.beginPath()
+                        ctx.moveTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 6 - 10)
+                        ctx.lineTo(pla_x + tile.width - 5, pla_y - (tile.height * 4) + 6 - 10)
+                        ctx.lineTo(pla_x + tile.width - 1 - 5, pla_y - (tile.height * 4) + 7 - 10)
+                        ctx.lineTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 7 - 10)
+                        ctx.stroke()
+                        ctx.textAlign = "center"
+                        ctx.fillStyle = "#000"
+                        ctx.fillText("...", pla_x + tile.width - 5, pla_y - (tile.height * 4) - 10)
+                        //ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle [, anticlockwise])
+                    }
                 })
 
                 //chat for players
@@ -696,30 +729,9 @@
                     ctx.fillStyle = "#FFF"
                     ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
                     ctx.fillStyle = "#000"
+                    ctx.font = 'bolder 50px'
                     ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
                 })
-
-                //animation frame adjustment
-                current_frame = frame_count
-                if (frame_count == 5) {
-                    current_frame = 3;
-                }
-                if (frame_count == 6) {
-                    current_frame = 1;
-                }
-                else if (frame_count == 7) {
-                    current_frame = 2
-                }
-                else if (frame_count == 8) {
-                    current_frame = 3
-                }
-                else if (frame_count == 9) {
-                    current_frame = 4
-                }
-                else if (frame_count == 10) {
-                    current_frame = 3
-                }
-
                 stats.end()
                 requestAnimationFrame(game);
             }
@@ -803,6 +815,14 @@
                 if (e.which == 13) {
                     socket.emit("chat", document.querySelector("#chat_box").value)
                     document.querySelector("#chat_box").value = ""
+                    socket.emit("typing", false)
+                    typing = false
+                }
+                else {
+                    if (!typing) {
+                        typing = true
+                        socket.emit("typing", true)
+                    }
                 }
             })
 
@@ -1148,6 +1168,14 @@
                     }
                     else {
                         document.querySelector(".room_list").insertAdjacentHTML("beforeend", "<div class='room_list_item goto_room' data='" + room.id + "'><div class='room_list_users1 goto_room' data='" + room.id + "'>" + room.users + "</div><div class='room_list_name goto_room' data='" + room.id + "'>" + room.name + "</div></div>")
+                    }
+                })
+            })
+
+            socket.on("typing", data => {
+                players.forEach(player => {
+                    if (player.id == data.id) {
+                        player.typing = data.typing
                     }
                 })
             })

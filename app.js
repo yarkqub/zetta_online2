@@ -127,7 +127,7 @@ io.on('connection', (socket) => {
 
         // LOAD FURNITURE IN ROOMS
         db.each("SELECT * FROM furniture WHERE room = ?", rid, (err, res) => {
-            console.log("furni_res", res)
+            //console.log("furni_res", res)
             io.in(rid).emit("furni", res)
         })
 
@@ -174,7 +174,7 @@ io.on('connection', (socket) => {
                     bcrypt.compare(data.password, res.password, (err, res1) => {
                         if (res1) {
                             socket.emit("message", { type: "success_login", message: "Logged in...", username: res.username, coins: res.coins })
-                            players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0, step: 0})
+                            players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0, step: 0 })
                             join_room("1");
                         }
                         else {
@@ -251,6 +251,15 @@ io.on('connection', (socket) => {
 
     socket.on("goto", data => {
         join_room(data.room);
+    })
+
+    socket.on("typing", data => {
+        players.forEach((player) => {
+            if (player.socket == socket.id) {
+                player.typing = data
+                io.in(socket.my_room).emit("typing", { id: player.id, typing: player.typing })
+            }
+        })
     })
 
     socket.on('disconnect', () => {

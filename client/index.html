@@ -338,7 +338,8 @@
     <script>
         (() => {
 
-            console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c0.08 ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
+            const zetta_version = 0.09
+            console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
 
             const socket = io()
 
@@ -440,7 +441,7 @@
                 ctx.fillStyle = "#FAA"
                 ctx.font = "14px Arial"
                 ctx.textAlign = "start";
-                ctx.fillText("Zetta Online [v0.8] | Room: " + room.name + " |", 100, 20)
+                ctx.fillText("Zetta Online [v" + zetta_version + "] | Room: " + room.name + " |", 100, 20)
 
                 //draw map
                 ctx.strokeStyle = "#8E8E5E"
@@ -716,13 +717,15 @@
 
                 //chat for players
                 chats.forEach((chat, i) => {
-                    ctx.textAlign = "start";
+                    /*ctx.textAlign = "start";
                     ctx.fillStyle = "#FFF"
                     const chat_len = chat.username + ": " + chat.message
                     const chat_len2 = ctx.measureText(chat_len).width + 10
                     ctx.fillRect(20, can.height - (i * 20) - 150, chat_len2, 18)
                     ctx.fillStyle = "#F00"
-                    ctx.fillText(chat_len, 25, can.height - (i * 20) + 12 - 150)
+                    ctx.fillText(chat_len, 25, can.height - (i * 20) + 12 - 150)*/
+                    const chat_len = chat.username + ": " + chat.message
+                    const chat_len2 = ctx.measureText(chat_len).width + 10
                     //bubble chat
                     const pla_x = display_x + (chat.x * (tile.width * 2) - (chat.x * tile.width) - (chat.y * tile.width))
                     ctx.textAlign = "center";

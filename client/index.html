@@ -356,7 +356,6 @@
                 height: tile_width / 4
             }
 
-            let interval
             let display_x = window.innerWidth / 2
             let display_y = window.innerHeight / 2
             let players = []
@@ -380,6 +379,7 @@
             }
 
             let typing = false;
+            let typing_timer
 
             //player image
             const char_image = new Image()
@@ -397,6 +397,15 @@
             let frame_count = 0
             let current_frame = 0
             let fps_time = Date.now()
+
+            //typing timeout
+            const typing_timeout = () => {
+                clearTimeout(typing_timer)
+                typing_timer = setTimeout(()=>{
+                    socket.emit("typing", false)
+                    typing = false
+                }, 3000)
+            }
 
             //initiate game settings...
             const start = () => {
@@ -815,11 +824,13 @@
             })
 
             document.querySelector("#chat_box").addEventListener("keyup", e => {
+                typing_timeout()
                 if (e.which == 13) {
                     socket.emit("chat", document.querySelector("#chat_box").value)
                     document.querySelector("#chat_box").value = ""
                     socket.emit("typing", false)
                     typing = false
+                    clearTimeout(typing_timer)
                 }
                 else {
                     if (!typing) {
@@ -828,6 +839,8 @@
                     }
                 }
             })
+
+
 
             ////////////// Floating menu draf event //////////////////////
             // Make the DIV element draggable:
@@ -1108,7 +1121,6 @@
             })
 
             socket.on("chat", data => {
-                console.log("Chat", data)
                 chats.unshift({ username: data.username, message: data.message, x: data.x, y: data.y })
             })
 

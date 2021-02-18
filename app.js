@@ -139,7 +139,7 @@ io.on('connection', (socket) => {
         if (players) {
             const player = players.filter(player => { return player.socket == socket.id })
             if (typeof (player[0]) !== "undefined") {
-                io.in(socket.my_room).emit("move", { id: player[0].id, x: data.x, y: data.y })
+                io.in(socket.my_room).emit("move", { id: player[0].id, x: data.x, y: data.y, state: "stand" })
             }
         }
     })
@@ -161,7 +161,13 @@ io.on('connection', (socket) => {
     socket.on("chat", data => {
         const player = players.filter(player => {
             if (player.socket == socket.id) {
-                io.to(player.room).emit("chat", { username: player.username, message: data, x: player.x, y: player.y });
+                if (data.startsWith(":sit")) {
+                    player.state = "sit"
+                    io.to(player.room).emit("sit", {id: player.id})
+                }
+                else {
+                    io.to(player.room).emit("chat", { username: player.username, message: data, x: player.x, y: player.y });
+                }
             }
         })
     })

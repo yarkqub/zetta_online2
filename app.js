@@ -36,93 +36,95 @@ io.on('connection', (socket) => {
         let door_x = 0
         let door_y = 0
         db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res) => {
-            socket.emit("room", { name: res.name, map: res.map, door: res.door })
-            let door_ = JSON.parse(res.door)
-            door_x = door_[0]
-            door_y = door_[1]
+            if (res["COUNT(*)"] != 0) {
+                socket.emit("room", { name: res.name, map: res.map, door: res.door })
+                let door_ = JSON.parse(res.door)
+                door_x = door_[0]
+                door_y = door_[1]
 
-            let room_loaded = loaded_rooms.some(room => {
-                return room.id == rid
-            })
-
-            if (typeof (socket.my_room) == "undefined") {
-                // not from any room, just entered this room / No room to unload
-                if (room_loaded) {
-                    //if room already exist (have player in it)
-                    loaded_rooms.filter(room => {
-                        if (room.id == rid) {
-                            room.users++
-                        }
-                    })
-                }
-                else {
-                    //room already have plyr in it
-                    loaded_rooms.push({ id: rid, name: res.name, users: 1 });
-                }
-
-                socket.join(rid)
-
-                players.filter(player => {
-                    if (player.socket == socket.id) {
-                        player.x = door_x
-                        player.y = door_y
-                    }
+                let room_loaded = loaded_rooms.some(room => {
+                    return room.id == rid
                 })
 
-                socket.my_room = rid
-                let player_in_room = players.filter(player => { return player.room == rid });
-                io.in(socket.my_room).emit("player_update", player_in_room)
-            }
-            else {
-                if (socket.my_room != rid) {
-                    if (room_loaded) { //if target room exist / have someone else
+                if (typeof (socket.my_room) == "undefined") {
+                    // not from any room, just entered this room / No room to unload
+                    if (room_loaded) {
+                        //if room already exist (have player in it)
                         loaded_rooms.filter(room => {
                             if (room.id == rid) {
                                 room.users++
                             }
                         })
-                        loaded_rooms.filter((room, index) => {
-                            if (room.id == socket.my_room) {
-                                room.users--
-                                if (room.users == 0) {
-                                    loaded_rooms.splice(index, 1)
-                                }
-                            }
-                        })
                     }
                     else {
-                        console.log("TARGET ROOM Not EXIST", loaded_rooms)
-                        loaded_rooms.filter((room, index) => {
-                            if (room.id == socket.my_room) {
-                                room.users--
-                                if (room.users == 0) {
-                                    loaded_rooms.splice(index, 1)
-                                }
-                            }
-                        })
+                        //room already have plyr in it
                         loaded_rooms.push({ id: rid, name: res.name, users: 1 });
                     }
 
-                    socket.leave(socket.my_room)
                     socket.join(rid)
 
                     players.filter(player => {
                         if (player.socket == socket.id) {
-                            player.room = rid
                             player.x = door_x
                             player.y = door_y
-                            socket.emit("my_id", socket.id)
                         }
                     })
 
-                    let player_in_prevroom = players.filter(player => { return player.room == socket.my_room });
-                    io.in(socket.my_room).emit("player_update", player_in_prevroom)
-
                     socket.my_room = rid
                     let player_in_room = players.filter(player => { return player.room == rid });
-                    io.in(rid).emit("player_update", player_in_room)
+                    io.in(socket.my_room).emit("player_update", player_in_room)
+                }
+                else {
+                    if (socket.my_room != rid) {
+                        if (room_loaded) { //if target room exist / have someone else
+                            loaded_rooms.filter(room => {
+                                if (room.id == rid) {
+                                    room.users++
+                                }
+                            })
+                            loaded_rooms.filter((room, index) => {
+                                if (room.id == socket.my_room) {
+                                    room.users--
+                                    if (room.users == 0) {
+                                        loaded_rooms.splice(index, 1)
+                                    }
+                                }
+                            })
+                        }
+                        else {
+                            loaded_rooms.filter((room, index) => {
+                                if (room.id == socket.my_room) {
+                                    room.users--
+                                    if (room.users == 0) {
+                                        loaded_rooms.splice(index, 1)
+                                    }
+                                }
+                            })
+                            loaded_rooms.push({ id: rid, name: res.name, users: 1 });
+                        }
+
+                        socket.leave(socket.my_room)
+                        socket.join(rid)
+
+                        players.filter(player => {
+                            if (player.socket == socket.id) {
+                                player.room = rid
+                                player.x = door_x
+                                player.y = door_y
+                                socket.emit("my_id", socket.id)
+                            }
+                        })
+
+                        let player_in_prevroom = players.filter(player => { return player.room == socket.my_room });
+                        io.in(socket.my_room).emit("player_update", player_in_prevroom)
+
+                        socket.my_room = rid
+                        let player_in_room = players.filter(player => { return player.room == rid });
+                        io.in(rid).emit("player_update", player_in_room)
+                    }
                 }
             }
+
         })
 
         // LOAD FURNITURE IN ROOMS
@@ -173,15 +175,15 @@ io.on('connection', (socket) => {
                 db.each("SELECT * FROM users WHERE username = ? COLLATE NOCASE", data.username, (err, res) => {
                     bcrypt.compare(data.password, res.password, (err, res1) => {
                         if (res1) {
-                            
+
                             players.filter(player => {
                                 if (player.id == res.id) {
                                     io.to(player.socket).emit("make_disconnect");
                                 }
                             })
-                            
+
                             socket.emit("message", { type: "success_login", message: "Logged in...", username: res.username, coins: res.coins })
-                            players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0, step: 0 })
+                            players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0, step: 0, state: "stand" })
                             join_room("1");
                         }
                         else {

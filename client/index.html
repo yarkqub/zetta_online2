@@ -1076,6 +1076,9 @@
                 alert("Disconnected...")
                 location.reload();
             });
+            socket.on('make_disconnect', () => {
+                location.reload();
+            });
             socket.on("message", (data) => {
                 if (data.type == "error_message") {
                     alert("Error: " + data.message)

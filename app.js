@@ -173,6 +173,13 @@ io.on('connection', (socket) => {
                 db.each("SELECT * FROM users WHERE username = ? COLLATE NOCASE", data.username, (err, res) => {
                     bcrypt.compare(data.password, res.password, (err, res1) => {
                         if (res1) {
+                            
+                            players.filter(player => {
+                                if (player.id == res.id) {
+                                    io.to(player.socket).emit("make_disconnect");
+                                }
+                            })
+                            
                             socket.emit("message", { type: "success_login", message: "Logged in...", username: res.username, coins: res.coins })
                             players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0, step: 0 })
                             join_room("1");

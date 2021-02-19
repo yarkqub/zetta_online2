@@ -623,7 +623,7 @@
                     const pla_y = display_y + (player.y * (tile.height * 2) - (player.y * tile.height) + (player.x * tile.height) - (room.map[Math.floor(player.y)][Math.floor(player.x)] * (tile.height / 2)))
                     ctx.textAlign = "center";
                     ctx.fillStyle = "#FFF"
-                    ctx.fillText(player.username, pla_x, pla_y - character.height)
+                    ctx.fillText(player.username, pla_x, pla_y - character.height + tile.height)
 
                     let cx = character.width * 6
                     let cy = character.height * 2

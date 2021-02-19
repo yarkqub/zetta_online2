@@ -338,7 +338,7 @@
     <script>
         (() => {
 
-            const zetta_version = "0.11Alpha"
+            const zetta_version = 0.11
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
 
             const socket = io()
@@ -594,12 +594,16 @@
                                         //set player x and y location to the location it should be
                                         player.x = target_x
                                         player.y = target_y
+                                        if (player.r >= 9) {
+                                            player.r -= 10
+                                        }
                                         player.step = 1
                                         walk.step.shift()//remove step already done animation
                                         socket.emit("movement", { id: player.id, x: player.x, y: player.y, r: player.r })
                                     }
                                 }
                                 else {
+                                    console.log("End of walking animation set the directin to single thread")
                                     //regulate balik location x,y player
                                     player.x = Math.round(player.x)
                                     player.y = Math.round(player.y)
@@ -699,18 +703,23 @@
                     }
 
                     if (player.state == "sit") {
-                        cy = character.height * 2
-                        if (player.r == 0 || player.r == 1 || player.r == 10 || player.r == 11) {
-                            cx = character.width * 10
+                        if (player.r <= 8) {
+                            cy = character.height * 2
+                            if (player.r == 0 || player.r == 1) {
+                                cx = character.width * 10
+                            }
+                            if (player.r == 2 || player.r == 3) {
+                                cx = character.width * 11
+                            }
+                            if (player.r == 4 || player.r == 5) {
+                                cx = character.width * 12
+                            }
+                            if (player.r == 6 || player.r == 7) {
+                                cx = character.width * 13
+                            }
                         }
-                        if (player.r == 2 || player.r == 3 || player.r == 12 || player.r == 13) {
-                            cx = character.width * 11
-                        }
-                        if (player.r == 4 || player.r == 5 || player.r == 14 || player.r == 15) {
-                            cx = character.width * 12
-                        }
-                        if (player.r == 6 || player.r == 7 || player.r == 16 || player.r == 17) {
-                            cx = character.width * 13
+                        else if (player.r > 8) {
+                            player.state = "stand"
                         }
                     }
 
@@ -1152,6 +1161,7 @@
                 players.filter(player => {
                     //set player gesture to stand
                     if (player.id == data.id) {
+                        player.state = data.state
                         if (data.x != player.x || data.y != player.y) {
                             const userMoving = walking.some(player => { return player.id == data.id })
                             if (!userMoving) {

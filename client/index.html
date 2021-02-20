@@ -462,6 +462,7 @@
                         if (room.map[j][i]) {
                             const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
                             const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+                            //y shadow
                             const ys = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height))
 
                             //tile shadow when height
@@ -1142,14 +1143,29 @@
                 walking.length = 0
                 room.door_x = data_door[0]
                 room.door_y = data_door[1]
-                display_x = (window.innerWidth / 2) - ((tile_width / 2) * room.door_x) - ((tile_width / 2) * room.door_y);
-                display_y = (window.innerHeight / 2) - ((tile_width / 4) * room.door_y) + ((tile_width / 4) * room.door_x);
+                //testing area j,i
+                // const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
+                //const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+
+
+
+                display_x = 0 + (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width)) + (window.innerWidth / 2)
+                display_y = 0 - (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2))) + (window.innerHeight / 2)
+
+                /// get door location~
+                //console.log("Door:", data_door[0], data_door[1])
+                //display_x = 0 + (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2)))
+                //display_y = (window.innerHeight/2) + (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width))
+                //console.log("display_x,y", display_x, display_y)
+
+                //testing area end
+                //display_x = (window.innerWidth / 2) - ((tile_width / 2) * room.door_x) - ((tile_width / 2) * room.door_y);
+                //display_y = (window.innerHeight / 2) - ((tile_width / 4) * room.door_y) + ((tile_width / 4) * room.door_x);
                 update_map();
             })
 
             socket.on("player_update", (data) => {
                 players = data
-                console.log("PLayer update: ", players)
             })
 
             socket.on("chat", data => {
@@ -1235,6 +1251,10 @@
                         player.state = "sit"
                     }
                 })
+            })
+
+            socket.on("furni", data => {
+                console.log(data)
             })
 
         })()

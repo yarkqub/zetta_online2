@@ -32,9 +32,17 @@ db.serialize(() => {
 app.use('/', express.static(__dirname + '/client'))
 
 io.on('connection', (socket) => {
-    let join_room = rid => {
+    const join_room = rid => {
         let door_x = 0
         let door_y = 0
+
+        //update user state
+        players.forEach(player => {
+            if (player.socket == socket.id) {
+                player.state = "stand"
+            }
+        })
+
         db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res) => {
             if (res["COUNT(*)"] != 0) {
                 socket.emit("room", { name: res.name, map: res.map, door: res.door })

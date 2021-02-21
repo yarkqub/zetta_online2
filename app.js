@@ -35,14 +35,6 @@ io.on('connection', (socket) => {
     const join_room = rid => {
         let door_x = 0
         let door_y = 0
-
-        //update user state
-        players.forEach(player => {
-            if (player.socket == socket.id) {
-                player.state = "stand"
-            }
-        })
-
         db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res) => {
             if (res["COUNT(*)"] != 0) {
                 socket.emit("room", { name: res.name, map: res.map, door: res.door })
@@ -75,6 +67,7 @@ io.on('connection', (socket) => {
                         if (player.socket == socket.id) {
                             player.x = door_x
                             player.y = door_y
+                            player.state = "stand"
                         }
                     })
 
@@ -119,6 +112,8 @@ io.on('connection', (socket) => {
                                 player.room = rid
                                 player.x = door_x
                                 player.y = door_y
+                                player.r = 0
+                                player.state = "stand"
                                 socket.emit("my_id", socket.id)
                             }
                         })

@@ -155,6 +155,7 @@ io.on('connection', (socket) => {
                         player.x = data.x
                         player.y = data.y
                         player.r = data.r
+                        player.state = "stand"
                     }
                 }
             });

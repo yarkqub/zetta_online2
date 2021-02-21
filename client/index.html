@@ -359,6 +359,7 @@
             let display_x = window.innerWidth / 2
             let display_y = window.innerHeight / 2
             let players = []
+            let furnis = []
             let chats = []
             const walking = [];
             let my_username = ""
@@ -532,7 +533,6 @@
                 //move player
                 const now = Date.now()
                 const then = fps_time + (1000 / 15) //setfps
-                //const then = fps_time + 2000 //setfps
                 if (now >= then) {
                     fps_time = now
                     //animate the walking array
@@ -548,10 +548,6 @@
                                     const player_x = player.x
                                     const player_y = player.y
                                     const player_s = player.step++
-
-                                    //if (player.state !== data.state) {
-                                    //    player.state = data.state
-                                    //}
 
                                     if (player_y < target_y) {
                                         player.y = player.y + 0.125
@@ -754,6 +750,16 @@
                     }
                 })
 
+                //draw furniture
+                furnis.forEach(furni => {
+                    const j = furni.y
+                    const i = furni.x
+                    const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
+                    const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+                    ctx.fillRect(x, y, tile.width, tile.height)
+                    ctx.fillText(j + "," + i, x, y)
+                })
+
                 //chat for players
                 chats.forEach((chat, i) => {
                     /*ctx.textAlign = "start";
@@ -775,6 +781,8 @@
                     ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
                 })
                 stats.end()
+
+
                 requestAnimationFrame(game);
             }
 
@@ -1139,28 +1147,11 @@
                 room.name = data.name
                 room.map = data_map
                 graph = new Graph(room.map, { diagonal: true })
-                //move.length = 0
                 walking.length = 0
                 room.door_x = data_door[0]
                 room.door_y = data_door[1]
-                //testing area j,i
-                // const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
-                //const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
-
-
-
                 display_x = 0 + (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width)) + (window.innerWidth / 2)
                 display_y = 0 - (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2))) + (window.innerHeight / 2)
-
-                /// get door location~
-                //console.log("Door:", data_door[0], data_door[1])
-                //display_x = 0 + (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2)))
-                //display_y = (window.innerHeight/2) + (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width))
-                //console.log("display_x,y", display_x, display_y)
-
-                //testing area end
-                //display_x = (window.innerWidth / 2) - ((tile_width / 2) * room.door_x) - ((tile_width / 2) * room.door_y);
-                //display_y = (window.innerHeight / 2) - ((tile_width / 4) * room.door_y) + ((tile_width / 4) * room.door_x);
                 update_map();
             })
 
@@ -1254,8 +1245,10 @@
             })
 
             socket.on("furni", data => {
-                console.log(data)
+                furnis = data
+                console.log(furnis)
             })
+            
 
         })()
     </script>

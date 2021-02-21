@@ -128,9 +128,12 @@ io.on('connection', (socket) => {
         })
 
         // LOAD FURNITURE IN ROOMS
+        let furnis = []
         db.each("SELECT * FROM furniture WHERE room = ?", rid, (err, res) => {
-            //console.log("furni_res", res)
-            io.in(rid).emit("furni", res)
+            furnis.push(res);
+        }, () => {
+            io.in(rid).emit("furni", furnis)
+            console.log(furnis)
         })
 
     }
@@ -163,7 +166,7 @@ io.on('connection', (socket) => {
             if (player.socket == socket.id) {
                 if (data.startsWith(":sit")) {
                     player.state = "sit"
-                    io.to(player.room).emit("sit", {id: player.id})
+                    io.to(player.room).emit("sit", { id: player.id })
                 }
                 else {
                     io.to(player.room).emit("chat", { username: player.username, message: data, x: player.x, y: player.y });

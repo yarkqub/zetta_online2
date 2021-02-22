@@ -338,7 +338,7 @@
     <script>
         (() => {
 
-            const zetta_version = 0.12
+            const zetta_version = 0.13
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
 
             const socket = io()
@@ -360,6 +360,7 @@
             let display_y = window.innerHeight / 2
             let players = []
             let furnis = []
+            let items = []
             let chats = []
             const walking = [];
             let my_username = ""
@@ -382,8 +383,10 @@
             let typing = false;
             let typing_timer
 
+            let item_image = []
+
             //player image
-            const char_image = new Image()
+            let char_image = new Image()
             char_image.src = "characters/character_sprite.png"
             const character = {
                 width: 64,
@@ -756,8 +759,13 @@
                     const i = furni.x
                     const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
                     const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
-                    ctx.fillRect(x, y, tile.width, tile.height)
-                    ctx.fillText(j + "," + i, x, y)
+
+                    const found_item = items.find(item => { return item.id == furni.item_id })
+
+                    const cx = x - tile.width
+                    const cy = y - tile.height - (found_item.height * (tile.height * 2))
+                    ctx.drawImage(item_image[furni.item_image], cx, cy, (tile.width * 2), (tile.height * 4));
+
                 })
 
                 //chat for players
@@ -1246,9 +1254,19 @@
 
             socket.on("furni", data => {
                 furnis = data
-                console.log(furnis)
+                console.log("Furnis:", furnis)
             })
-            
+
+            socket.on("items", data => {
+                items = data
+                console.log("Items: ", items)
+                for (let i = 0; i < items.length; i++) {
+                    let img = new Image()
+                    item_image[items.id] = img
+                    img.src = "items/" + items[i].image
+                }
+            })
+
 
         })()
     </script>

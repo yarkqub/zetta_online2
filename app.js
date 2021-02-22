@@ -135,8 +135,8 @@ io.on('connection', (socket) => {
         db.each("SELECT * FROM furniture WHERE room = ?", rid, (err, res) => {
             furnis.push(res);
         }, () => {
-            io.in(rid).emit("furni", furnis)
-            console.log(furnis)
+            //io.in(rid).emit("furni", furnis)
+            io.emit("furni", furnis)
         })
 
     }
@@ -197,7 +197,15 @@ io.on('connection', (socket) => {
 
                             socket.emit("message", { type: "success_login", message: "Logged in...", username: res.username, coins: res.coins })
                             players.push({ id: res.id, socket: socket.id, username: res.username, room: "1", x: 0, y: 0, r: 0, step: 0, state: "stand" })
-                            join_room("1");
+                            let items = []
+                            db.each("SELECT * FROM items", (item_err, item_res) => {
+                                items.push(item_res)
+                            }, () => {
+                                socket.emit("items", items)
+                                join_room("1");
+                            })
+
+                            
                         }
                         else {
                             socket.emit("message", { type: "error_message", message: "Password incorrect" })

@@ -1113,6 +1113,7 @@
                         console.log("goto_room? ", el.target.getAttribute("data"))
                         socket.emit("goto", { room: el.target.getAttribute("data") })
                         document.querySelector("#room_nav").style.display = "none"
+                        chats = []
                     }
                 })
             })

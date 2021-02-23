@@ -385,6 +385,8 @@
 
             let item_image = []
 
+            let draw_array = []
+
             //player image
             let char_image = new Image()
             char_image.src = "characters/character_sprite.png"
@@ -433,6 +435,7 @@
 
                 //game()
             }
+
 
             //main game loop function
             const game = () => {
@@ -748,7 +751,6 @@
                         ctx.textAlign = "center"
                         ctx.fillStyle = "#000"
                         ctx.fillText("...", pla_x + tile.width - 5, pla_y - (tile.height * 4) - 10)
-                        //ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle [, anticlockwise])
                     }
                 })
 
@@ -1271,6 +1273,7 @@
                     img.onload = () => {
                         loading_count++
                         if (loading_count >= items.length) {
+                            console.log("Done. loading game...")
                             game()
                         }
                         else {

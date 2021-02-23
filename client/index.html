@@ -431,12 +431,11 @@
                 stats.showPanel(0)
                 document.body.appendChild(stats.dom);
 
-                game()
+                //game()
             }
 
             //main game loop function
             const game = () => {
-
                 stats.begin()
 
                 //clear canvas
@@ -761,10 +760,13 @@
                     const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
 
                     const found_item = items.find(item => { return item.id == furni.item_id })
+                    const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
 
                     const cx = x - tile.width
                     const cy = y - tile.height - (found_item.height * (tile.height * 2))
-                    ctx.drawImage(item_image[furni.item_image], cx, cy, (tile.width * 2), (tile.height * 4));
+                    const item_id = Number(furni.item_id)
+
+                    ctx.drawImage(item_image[item_index], cx, cy, (tile.width * 2), (tile.height * 4));
 
                 })
 
@@ -1258,13 +1260,24 @@
                 console.log("Furnis:", furnis)
             })
 
+            let loading_count = 0
             socket.on("items", data => {
                 items = data
                 console.log("Items: ", items)
                 for (let i = 0; i < items.length; i++) {
                     let img = new Image()
-                    item_image[items.id] = img
-                    img.src = "items/" + items[i].image
+                    item_image.push(img)
+                    item_image[i].src = "items/" + items[i].image
+                    img.onload = () => {
+                        loading_count++
+                        if (loading_count >= items.length) {
+                            game()
+                        }
+                        else {
+                            console.log(loading_count + "/" + items.length)
+                        }
+                    }
+                    img.onerror = () => { alert("Item loading error"); }
                 }
             })
 

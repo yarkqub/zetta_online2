@@ -461,6 +461,10 @@
                 //draw map
                 ctx.strokeStyle = "#8E8E5E"
                 ctx.fillStyle = "#989865"
+
+                //draw reset
+                draw_array = []
+
                 const map_j = room.map.length
                 for (let j = 0; j < map_j; j++) {
                     const map_i = room.map[j].length
@@ -724,7 +728,22 @@
                         }
                     }
 
-                    ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - character.height + (tile.height / 2), tile.width * 2, character.height)
+                    //ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - character.height + (tile.height / 2), tile.width * 2, character.height)
+
+                    const this_drawing = {
+                        img: char_image,
+                        cx: cx,
+                        cy: cy,
+                        cw: character.width,
+                        ch: character.height,
+                        px: pla_x - tile.width,
+                        py: pla_y - character.height + (tile.height / 2),
+                        pw: tile.width * 2,
+                        ph: character.height,
+                        real_x: player.y,
+                        real_y: player.x
+                    }
+                    draw_array.push(this_drawing)
 
                     //typing status
                     if (player.typing) {
@@ -768,9 +787,52 @@
                     const cy = y - tile.height - (found_item.height * (tile.height * 2))
                     const item_id = Number(furni.item_id)
 
-                    ctx.drawImage(item_image[item_index], cx, cy, (tile.width * 2), (tile.height * 4));
+                    //ctx.drawImage(item_image[item_index], cx, cy, (tile.width * 2), (tile.height * 4));
+                    const this_drawing = {
+                        img: item_image[item_index],
+                        cx: null,
+                        cy: null,
+                        cw: null,
+                        ch: null,
+                        px: cx,
+                        py: cy,
+                        pw: (tile.width * 2),
+                        ph: (tile.height * 4),
+                        real_x: j,
+                        real_y: i
+                    }
+                    draw_array.push(this_drawing)
+                    //.push(item_image[item_index], cx, cy, (tile.width * 2), (tile.height * 4))
 
                 })
+
+                //console.log("befo:", draw_array.map(abc => { return abc.real_x + "," + abc.real_y }));
+
+
+                draw_array.sort((a, b) => { return a.real_y - b.real_y })
+                //draw_array.sort((a, b) => { if (a.real_x > b.real_x || a.real_y > b.real_y) { return -1 } if (a.real_x < b.real_x || a.real_y < b.real_y) { return 1 } })
+
+                //console.log("after:", draw_array.map(abc => { return abc.real_x + "," + abc.real_y }));
+                //draw_array.sort((a, b) => { return a.py - b.py || a.px - b.px })
+
+                let last_axist = -1
+                draw_array.forEach(lukis => {
+                    if (last_axist != lukis.real_y) {
+                        last_axist = lukis.real_y
+                        let draw = draw_array.filter(this_draw => { return this_draw.real_y == lukis.real_y })
+                        draw.sort((a, b) => { return a.real_x - b.real_x })
+                        draw.forEach(lukisan => {
+                            if (lukisan.cx == null) {
+                                ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                            }
+                            else {
+                                ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                            }
+                        })
+
+                    }
+                })
+
 
                 //chat for players
                 chats.forEach((chat, i) => {
@@ -793,7 +855,6 @@
                     ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
                 })
                 stats.end()
-
 
                 requestAnimationFrame(game);
             }

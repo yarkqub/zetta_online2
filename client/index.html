@@ -381,6 +381,7 @@
 
             let item_image = []
             let draw_array = []
+            let draw_ontop = []
 
             //player image
             let char_image = new Image()
@@ -452,6 +453,7 @@
 
                 //draw reset
                 draw_array = []
+                draw_ontop = []
 
                 //drawing map
                 const map_j = room.map.length
@@ -618,14 +620,21 @@
                     const player_y = player.y
                     const tile_h = tile.height
                     const tile_w = tile.width
+                    const char_w = character.width
+                    const char_h = character.height
                     const pla_x = display_x + (player_x * (tile.width * 2) - (player_x * tile.width) - (player_y * tile.width))
                     const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2)))
-                    ctx.textAlign = "center";
-                    ctx.fillStyle = "#FFF"
-                    ctx.fillText(player.username, pla_x, pla_y - character.height + tile_h)
+                    
+                    const ontop = {
+                        typ: "username",
+                        txt: player.username,
+                        x: pla_x,
+                        y: pla_y - char_h + tile_h
+                    }
+                    draw_ontop.push(ontop)
 
-                    let cx = character.width * 6
-                    let cy = character.height * 2
+                    let cx = char_w * 6
+                    let cy = char_h * 2
 
                     //animation fix?
                     let walk_animation = player.step
@@ -634,106 +643,104 @@
                     }
 
                     if (player.r == 0) {
-                        cx = character.width * 0
-                        cy = character.height * 0
+                        cx = char_w * 0
+                        cy = char_h * 0
 
                     }
                     if (player.r == 1) {
-                        cx = character.width * 5
-                        cy = character.height * 0
+                        cx = char_w * 5
+                        cy = char_h * 0
                     }
                     if (player.r == 2) {
-                        cx = character.width * 10
-                        cy = character.height * 0
+                        cx = char_w * 10
+                        cy = char_h * 0
                     }
                     if (player.r == 3) {
-                        cx = character.width * 0
-                        cy = character.height * 2
+                        cx = char_w * 0
+                        cy = char_h * 2
                     }
                     if (player.r == 4) {
-                        cx = character.width * 10
-                        cy = character.height * 1
+                        cx = char_w * 10
+                        cy = char_h * 1
                     }
                     if (player.r == 5) {
-                        cx = character.width * 5
-                        cy = character.height * 1
+                        cx = char_w * 5
+                        cy = char_h * 1
                     }
                     if (player.r == 6) {
-                        cx = character.width * 0
-                        cy = character.height * 1
+                        cx = char_w * 0
+                        cy = char_h * 1
                     }
                     if (player.r == 7) {
-                        cx = character.width * 5
-                        cy = character.height * 2
+                        cx = char_w * 5
+                        cy = char_h * 2
                     }
 
                     if (player.r == 10) {
-                        cx = character.width * (walk_animation + 0) //frame should be 1 - 4
-                        cy = character.height * 0
+                        cx = char_w * (walk_animation + 0) //frame should be 1 - 4
+                        cy = char_h * 0
                     }
                     if (player.r == 11) {
-                        cx = character.width * (walk_animation + 5)
-                        cy = character.height * 0
+                        cx = char_w * (walk_animation + 5)
+                        cy = char_h * 0
                     }
                     if (player.r == 12) {
-                        cx = character.width * (walk_animation + 10)
-                        cy = character.height * 0
+                        cx = char_w * (walk_animation + 10)
+                        cy = char_h * 0
                     }
                     if (player.r == 13) {
-                        cx = character.width * (walk_animation + 0)
-                        cy = character.height * 2
+                        cx = char_w * (walk_animation + 0)
+                        cy = char_h * 2
                     }
                     if (player.r == 14) {
-                        cx = character.width * (walk_animation + 10)
-                        cy = character.height * 1
+                        cx = char_w * (walk_animation + 10)
+                        cy = char_h * 1
                     }
                     if (player.r == 15) {
-                        cx = character.width * (walk_animation + 5)
-                        cy = character.height * 1
+                        cx = char_w * (walk_animation + 5)
+                        cy = char_h * 1
                     }
 
                     if (player.r == 16) {
-                        cx = character.width * (walk_animation + 0)
-                        cy = character.height * 1
+                        cx = char_w * (walk_animation + 0)
+                        cy = char_h * 1
                     }
                     if (player.r == 17) {
-                        cx = character.width * (walk_animation + 5)
-                        cy = character.height * 2
+                        cx = char_w * (walk_animation + 5)
+                        cy = char_h * 2
                     }
 
                     if (player.state == "sit") {
                         if (player.r <= 8) {
-                            cy = character.height * 2
+                            cy = char_h * 2
                             if (player.r == 0 || player.r == 1) {
-                                cx = character.width * 10
+                                cx = char_w * 10
                             }
                             if (player.r == 2 || player.r == 3) {
-                                cx = character.width * 11
+                                cx = char_w * 11
                             }
                             if (player.r == 4 || player.r == 5) {
-                                cx = character.width * 12
+                                cx = char_w * 12
                             }
                             if (player.r == 6 || player.r == 7) {
-                                cx = character.width * 13
+                                cx = char_w * 13
                             }
                         }
                         else if (player.r > 8) {
                             player.state = "stand"
                         }
                     }
-
-                    //ctx.drawImage(char_image, cx, cy, character.width, character.height, pla_x - tile.width, pla_y - character.height + (tile.height / 2), tile.width * 2, character.height)
-
+                    
                     const this_drawing = {
                         img: char_image,
                         cx: cx,
                         cy: cy,
-                        cw: character.width,
-                        ch: character.height,
-                        px: pla_x - tile.width,
-                        py: pla_y - character.height + (tile_h / 2),
-                        pw: tile.width * 2,
-                        ph: character.height,
+                        cw: char_w,
+                        ch: char_h,
+                        px: pla_x - tile_w,
+                        py: pla_y - char_h + (tile_h / 2),
+                        pw: tile_w * 2,
+                        ph: char_h,
                         real_x: player_y,
                         real_y: player_x
                     }
@@ -741,29 +748,16 @@
 
                     //typing status
                     if (player.typing) {
-                        ctx.strokeStyle = "#000"
-                        ctx.beginPath()
-                        ctx.ellipse(pla_x + tile.width - 5, pla_y - (tile.height * 4) - 10, 11, 7, 0, 0, 2 * Math.PI)
-                        ctx.closePath()
-                        ctx.stroke()
-                        ctx.fill()
-                        ctx.beginPath()
-                        ctx.moveTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 7 - 10)
-                        ctx.lineTo(pla_x + tile.width - 1 - 5, pla_y - (tile.height * 4) + 7 - 10)
-                        ctx.lineTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 11 - 10)
-                        ctx.closePath()
-                        ctx.stroke()
-                        ctx.fill()
-                        ctx.strokeStyle = "#FFF"
-                        ctx.beginPath()
-                        ctx.moveTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 6 - 10)
-                        ctx.lineTo(pla_x + tile.width - 5, pla_y - (tile.height * 4) + 6 - 10)
-                        ctx.lineTo(pla_x + tile.width - 1 - 5, pla_y - (tile.height * 4) + 7 - 10)
-                        ctx.lineTo(pla_x + tile.width - 6 - 5, pla_y - (tile.height * 4) + 7 - 10)
-                        ctx.stroke()
-                        ctx.textAlign = "center"
-                        ctx.fillStyle = "#000"
-                        ctx.fillText("...", pla_x + tile.width - 5, pla_y - (tile.height * 4) - 10)
+                        const typ_x = pla_x + tile_w - 5
+                        const typ_y = pla_y - (tile_h * 4) - 10
+
+
+                        const ontop = {
+                            typ: "typing",
+                            x: typ_x,
+                            y: typ_y
+                        }
+                        draw_ontop.push(ontop)
                     }
                 })
 
@@ -798,8 +792,6 @@
                         real_y: i
                     }
                     draw_array.push(this_drawing)
-                    //.push(item_image[item_index], cx, cy, (tile.width * 2), (tile.height * 4))
-
                 })
 
                 //console.log("befo:", draw_array.map(abc => { return abc.real_x + "," + abc.real_y }));
@@ -829,18 +821,47 @@
                     }
                 })
 
+                //draw everything on top
+                draw_ontop.forEach(ontop=>{
+                    if(ontop.typ == "username"){
+                        ctx.textAlign = "center";
+                        ctx.fillStyle = "#FFF"
+                        ctx.fillText(ontop.txt, ontop.x, ontop.y)
+                    }
+                    if(ontop.typ == "typing"){
+                        const typ_x = ontop.x
+                        const typ_y = ontop.y
+                        ctx.strokeStyle = "#000"
+                        ctx.fillStyle = "#FFF"
+                        ctx.beginPath()
+                        ctx.ellipse(typ_x, typ_y, 11, 7, 0, 0, 2 * Math.PI)
+                        ctx.closePath()
+                        ctx.stroke()
+                        ctx.fill()
+                        ctx.beginPath()
+                        ctx.moveTo(typ_x - 6, typ_y + 7)
+                        ctx.lineTo(typ_x - 1, typ_y + 7)
+                        ctx.lineTo(typ_x - 6, typ_y + 11)
+                        ctx.closePath()
+                        ctx.stroke()
+                        ctx.fill()
+                        ctx.strokeStyle = "#FFF"
+                        ctx.beginPath()
+                        ctx.moveTo(typ_x - 5.5, typ_y + 6.5)
+                        ctx.lineTo(typ_x - 1.5, typ_y + 6.5)
+                        ctx.closePath()
+                        ctx.stroke()
+                        ctx.textAlign = "center"
+                        ctx.fillStyle = "#000"
+                        ctx.fillText("...", typ_x, typ_y)
+                    }
+                })
+
 
                 //chat for players
                 chats.forEach((chat, i) => {
-                    /*ctx.textAlign = "start";
-                    ctx.fillStyle = "#FFF"
-                    const chat_len = chat.username + ": " + chat.message
-                    const chat_len2 = ctx.measureText(chat_len).width + 10
-                    ctx.fillRect(20, can.height - (i * 20) - 150, chat_len2, 18)
-                    ctx.fillStyle = "#F00"
-                    ctx.fillText(chat_len, 25, can.height - (i * 20) + 12 - 150)*/
-                    const chat_len = chat.username + ": " + chat.message
-                    const chat_len2 = ctx.measureText(chat_len).width + 10
+                    const chat_msg = chat.username + ": " + chat.message
+                    const chat_len2 = ctx.measureText(chat_msg).width + 10
                     //bubble chat
                     const pla_x = display_x + (chat.x * (tile.width * 2) - (chat.x * tile.width) - (chat.y * tile.width))
                     ctx.textAlign = "center";
@@ -848,7 +869,7 @@
                     ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
                     ctx.fillStyle = "#000"
                     ctx.font = 'bolder 50px'
-                    ctx.fillText(chat_len, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
+                    ctx.fillText(chat_msg, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
                 })
                 stats.end()
 

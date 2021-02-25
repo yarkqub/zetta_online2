@@ -337,12 +337,10 @@
 
     <script>
         (() => {
-
-            const zetta_version = 0.13
+            const zetta_version = 0.15
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
 
             const socket = io()
-
             let stats
 
             const can = document.querySelector("#can")
@@ -362,17 +360,15 @@
             let furnis = []
             let items = []
             let chats = []
-            const walking = [];
+            const walking = []
             let my_username = ""
             let my_coins = ""
-
             let room_type = "public"
 
             let cursor_x = -1
             let cursor_y = -1
 
             let graph = ""
-
             let room = {
                 name: "",
                 map: [],
@@ -384,7 +380,6 @@
             let typing_timer
 
             let item_image = []
-
             let draw_array = []
 
             //player image
@@ -432,15 +427,11 @@
                 stats = new Stats();
                 stats.showPanel(0)
                 document.body.appendChild(stats.dom);
-
-                //game()
             }
-
 
             //main game loop function
             const game = () => {
                 stats.begin()
-
                 //clear canvas
                 ctx.fillStyle = "#000000"
                 ctx.fillRect(0, 0, can.width, can.height)
@@ -456,32 +447,32 @@
                 ctx.fillStyle = "#FAA"
                 ctx.font = "14px Arial"
                 ctx.textAlign = "start";
-                ctx.fillText("Zetta Online [v" + zetta_version + "] | Room: " + room.name + " |", 100, 20)
-
-                //draw map
-                ctx.strokeStyle = "#8E8E5E"
-                ctx.fillStyle = "#989865"
+                ctx.fillText("Zetta Online [v" + zetta_version + "]", 100, 20)
+                ctx.fillText("Room: " + room.name, 100, 35)
 
                 //draw reset
                 draw_array = []
 
+                //drawing map
                 const map_j = room.map.length
                 for (let j = 0; j < map_j; j++) {
                     const map_i = room.map[j].length
                     for (let i = 0; i < map_i; i++) {
                         if (room.map[j][i]) {
-                            const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
-                            const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
-                            //y shadow
-                            const ys = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height))
+                            const tile_w = tile.width
+                            const tile_h = tile.height
+                            const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                            const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
+                            //ys = y's shadow
+                            const ys = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h))
 
                             //tile shadow when height
                             ctx.fillStyle = "#555";
                             ctx.beginPath()
-                            ctx.moveTo(x, ys - tile.height)
-                            ctx.lineTo(x + tile.width, ys)
-                            ctx.lineTo(x, ys + tile.height)
-                            ctx.lineTo(x - tile.width, ys)
+                            ctx.moveTo(x, ys - tile_h)
+                            ctx.lineTo(x + tile_w, ys)
+                            ctx.lineTo(x, ys + tile_h)
+                            ctx.lineTo(x - tile_w, ys)
                             ctx.closePath()
                             ctx.fill()
 
@@ -489,10 +480,10 @@
                             ctx.strokeStyle = "#8E8E5E"
                             ctx.fillStyle = "#989865"
                             ctx.beginPath()
-                            ctx.moveTo(x, y - tile.height)
-                            ctx.lineTo(x + tile.width, y)
-                            ctx.lineTo(x, y + tile.height)
-                            ctx.lineTo(x - tile.width, y)
+                            ctx.moveTo(x, y - tile_h)
+                            ctx.lineTo(x + tile_w, y)
+                            ctx.lineTo(x, y + tile_h)
+                            ctx.lineTo(x - tile_w, y)
                             ctx.closePath()
                             ctx.fill()
                             ctx.stroke()
@@ -501,10 +492,10 @@
                             ctx.fillStyle = "#838357"
                             ctx.strokeStyle = "#7A7A51"
                             ctx.beginPath()
-                            ctx.moveTo(x - tile.width, y)
-                            ctx.lineTo(x, y + tile.height)
-                            ctx.lineTo(x, y + tile.height + (tile.height / 2))
-                            ctx.lineTo(x - tile.width, y + (tile.height / 2))
+                            ctx.moveTo(x - tile_w, y)
+                            ctx.lineTo(x, y + tile_h)
+                            ctx.lineTo(x, y + tile_h + (tile_h / 2))
+                            ctx.lineTo(x - tile_w, y + (tile_h / 2))
                             ctx.closePath()
                             ctx.fill()
                             ctx.stroke()
@@ -513,10 +504,10 @@
                             ctx.fillStyle = "#6F6F49"
                             ctx.strokeStyle = "#676744"
                             ctx.beginPath()
-                            ctx.moveTo(x, y + tile.height)
-                            ctx.lineTo(x + tile.width, y)
-                            ctx.lineTo(x + tile.width, y + (tile.height / 2))
-                            ctx.lineTo(x, y + tile.height + (tile.height / 2))
+                            ctx.moveTo(x, y + tile_h)
+                            ctx.lineTo(x + tile_w, y)
+                            ctx.lineTo(x + tile_w, y + (tile_h / 2))
+                            ctx.lineTo(x, y + tile_h + (tile_h / 2))
                             ctx.closePath()
                             ctx.fill()
                             ctx.stroke()
@@ -528,13 +519,15 @@
                 ctx.strokeStyle = "#FFFFFF"
                 ctx.lineWidth = 2
                 if (cursor_x >= 0 && cursor_y >= 0) {
-                    const cur_x = display_x + (cursor_x * (tile.width * 2) - (cursor_x * tile.width) - (cursor_y * tile.width))
-                    const cur_y = display_y + (cursor_y * (tile.height * 2) - (cursor_y * tile.height) + (cursor_x * tile.height) - (room.map[cursor_y][cursor_x] * (tile.height / 2)))
+                    const tile_w = tile.width
+                    const tile_h = tile.height
+                    const cur_x = display_x + (cursor_x * (tile_w * 2) - (cursor_x * tile_w) - (cursor_y * tile_w))
+                    const cur_y = display_y + (cursor_y * (tile_h * 2) - (cursor_y * tile_h) + (cursor_x * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
                     ctx.beginPath()
-                    ctx.moveTo(cur_x, cur_y - tile.height)
-                    ctx.lineTo(cur_x + tile.width, cur_y)
-                    ctx.lineTo(cur_x, cur_y + tile.height)
-                    ctx.lineTo(cur_x - tile.width, cur_y)
+                    ctx.moveTo(cur_x, cur_y - tile_h)
+                    ctx.lineTo(cur_x + tile_w, cur_y)
+                    ctx.lineTo(cur_x, cur_y + tile_h)
+                    ctx.lineTo(cur_x - tile_w, cur_y)
                     ctx.closePath()
                     ctx.stroke()
                 }
@@ -546,9 +539,6 @@
                     fps_time = now
                     //animate the walking array
                     walking.forEach((walk, index) => {
-
-                        players.sort((a, b) => { return a.x - b.x })
-
                         players.filter(player => {
                             if (walk.id == player.id) {
                                 if (walk.step.length) {
@@ -624,11 +614,15 @@
 
                 //players
                 players.forEach(player => {
-                    const pla_x = display_x + (player.x * (tile.width * 2) - (player.x * tile.width) - (player.y * tile.width))
-                    const pla_y = display_y + (player.y * (tile.height * 2) - (player.y * tile.height) + (player.x * tile.height) - (room.map[Math.floor(player.y)][Math.floor(player.x)] * (tile.height / 2)))
+                    const player_x = player.x
+                    const player_y = player.y
+                    const tile_h = tile.height
+                    const tile_w = tile.width
+                    const pla_x = display_x + (player_x * (tile.width * 2) - (player_x * tile.width) - (player_y * tile.width))
+                    const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2)))
                     ctx.textAlign = "center";
                     ctx.fillStyle = "#FFF"
-                    ctx.fillText(player.username, pla_x, pla_y - character.height + tile.height)
+                    ctx.fillText(player.username, pla_x, pla_y - character.height + tile_h)
 
                     let cx = character.width * 6
                     let cy = character.height * 2
@@ -737,11 +731,11 @@
                         cw: character.width,
                         ch: character.height,
                         px: pla_x - tile.width,
-                        py: pla_y - character.height + (tile.height / 2),
+                        py: pla_y - character.height + (tile_h / 2),
                         pw: tile.width * 2,
                         ph: character.height,
-                        real_x: player.y,
-                        real_y: player.x
+                        real_x: player_y,
+                        real_y: player_x
                     }
                     draw_array.push(this_drawing)
 
@@ -777,17 +771,19 @@
                 furnis.forEach(furni => {
                     const j = furni.y
                     const i = furni.x
-                    const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
-                    const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+                    const tile_w = tile.width
+                    const tile_h = tile.height
+                    const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                    const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
 
                     const found_item = items.find(item => { return item.id == furni.item_id })
                     const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
 
-                    const cx = x - tile.width
-                    const cy = y - tile.height - (found_item.height * (tile.height * 2))
+                    const cx = x - tile_w
+                    const cy = y - tile_h - (found_item.height * (tile_h * 2))
                     const item_id = Number(furni.item_id)
 
-                    //ctx.drawImage(item_image[item_index], cx, cy, (tile.width * 2), (tile.height * 4));
+                    //ctx.drawImage(item_image[item_index], cx, cy, (tile_w * 2), (tile_h * 4));
                     const this_drawing = {
                         img: item_image[item_index],
                         cx: null,
@@ -796,8 +792,8 @@
                         ch: null,
                         px: cx,
                         py: cy,
-                        pw: (tile.width * 2),
-                        ph: (tile.height * 4),
+                        pw: (tile_w * 2),
+                        ph: (tile_h * 4),
                         real_x: j,
                         real_y: i
                     }
@@ -815,7 +811,7 @@
                 //console.log("after:", draw_array.map(abc => { return abc.real_x + "," + abc.real_y }));
                 //draw_array.sort((a, b) => { return a.py - b.py || a.px - b.px })
 
-                let last_axist = -1
+                let last_axist
                 draw_array.forEach(lukis => {
                     if (last_axist != lukis.real_y) {
                         last_axist = lukis.real_y

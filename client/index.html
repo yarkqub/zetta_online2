@@ -774,7 +774,8 @@
                     const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
 
                     const cx = x - tile_w
-                    const cy = y - tile_h - (found_item.height * (tile_h * 2))
+                    //const cy = y - tile_h - (found_item.height * (tile_h * 2))
+                    const cy = y - item_image[item_index].height + tile_h
                     const item_id = Number(furni.item_id)
 
                     //ctx.drawImage(item_image[item_index], cx, cy, (tile_w * 2), (tile_h * 4));
@@ -811,7 +812,7 @@
                         draw.sort((a, b) => { return a.real_x - b.real_x })
                         draw.forEach(lukisan => {
                             if (lukisan.cx == null) {
-                                ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                                ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.img.height)
                             }
                             else {
                                 ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)

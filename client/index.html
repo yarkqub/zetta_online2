@@ -795,14 +795,7 @@
                     draw_array.push(this_drawing)
                 })
 
-                //console.log("befo:", draw_array.map(abc => { return abc.real_x + "," + abc.real_y }));
-
-
                 draw_array.sort((a, b) => { return a.real_y - b.real_y })
-                //draw_array.sort((a, b) => { if (a.real_x > b.real_x || a.real_y > b.real_y) { return -1 } if (a.real_x < b.real_x || a.real_y < b.real_y) { return 1 } })
-
-                //console.log("after:", draw_array.map(abc => { return abc.real_x + "," + abc.real_y }));
-                //draw_array.sort((a, b) => { return a.py - b.py || a.px - b.px })
 
                 let last_axist
                 draw_array.forEach(lukis => {
@@ -900,17 +893,7 @@
                 }
             }
 
-            document.querySelector("#goto_register").addEventListener("click", () => {
-                document.querySelector("#login").style.display = "none"
-                document.querySelector("#register").style.display = "block"
-            })
-
-            document.querySelector("#goto_login").addEventListener("click", () => {
-                document.querySelector("#register").style.display = "none"
-                document.querySelector("#login").style.display = "block"
-            })
-
-            document.querySelector("#do_register").addEventListener("click", () => {
+            const do_register = () => {
                 const username = document.querySelector("#reg_username").value
                 const email = document.querySelector("#reg_email").value
                 const password = document.querySelector("#reg_password").value
@@ -938,9 +921,9 @@
                 else {
                     alert("Please fill all form")
                 }
-            })
+            }
 
-            document.querySelector("#do_login").addEventListener("click", () => {
+            const do_login = () => {
                 const username = document.querySelector("#login_username").value
                 const password = document.querySelector("#login_password").value
 
@@ -950,6 +933,59 @@
                 else {
                     alert("Please fill all username and password");
                 }
+            }
+
+            document.querySelector("#goto_register").addEventListener("click", () => {
+                document.querySelector("#login").style.display = "none"
+                document.querySelector("#register").style.display = "block"
+            })
+
+            document.querySelector("#goto_login").addEventListener("click", () => {
+                document.querySelector("#register").style.display = "none"
+                document.querySelector("#login").style.display = "block"
+            })
+
+            document.querySelector("#reg_username").addEventListener("keyup", e=>{
+                if(e.which == 13){
+                    do_register()
+                }
+            })
+            
+            document.querySelector("#reg_email").addEventListener("keyup", e=>{
+                if(e.which == 13){
+                    do_register()
+                }
+            })
+
+            document.querySelector("#reg_password").addEventListener("keyup", e=>{
+                if(e.which == 13){
+                    do_register()
+                }
+            })
+
+            document.querySelector("#conf_password").addEventListener("keyup", e=>{
+                if(e.which == 13){
+                    do_register()
+                }
+            })
+
+            document.querySelector("#login_username").addEventListener("keyup", e=>{
+                if(e.which == 13){
+                    do_login()
+                }
+            })
+            document.querySelector("#login_password").addEventListener("keyup", e=>{
+                if(e.which == 13){
+                    do_login()
+                }
+            })
+
+            document.querySelector("#do_register").addEventListener("click", () => {
+                do_register()
+            })
+
+            document.querySelector("#do_login").addEventListener("click", () => {
+                do_login()
             })
 
             document.querySelector("#chat_box").addEventListener("keyup", e => {

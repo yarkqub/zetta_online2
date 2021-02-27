@@ -383,6 +383,8 @@
             let draw_array = []
             let draw_ontop = []
 
+            let debug
+
             //player image
             let char_image = new Image()
             char_image.src = "characters/character_sprite.png"
@@ -624,7 +626,7 @@
                     const char_h = character.height
                     const pla_x = display_x + (player_x * (tile.width * 2) - (player_x * tile.width) - (player_y * tile.width))
                     const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2)))
-                    
+
                     const ontop = {
                         typ: "username",
                         txt: player.username,
@@ -730,7 +732,7 @@
                             player.state = "stand"
                         }
                     }
-                    
+
                     const this_drawing = {
                         img: char_image,
                         cx: cx,
@@ -773,10 +775,11 @@
                     const found_item = items.find(item => { return item.id == furni.item_id })
                     const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
 
+                    const img_height = item_image[item_index].height
+
                     const cx = x - tile_w
                     //const cy = y - tile_h - (found_item.height * (tile_h * 2))
                     const cy = y - item_image[item_index].height + tile_h
-                    const item_id = Number(furni.item_id)
 
                     //ctx.drawImage(item_image[item_index], cx, cy, (tile_w * 2), (tile_h * 4));
                     const this_drawing = {
@@ -788,7 +791,7 @@
                         px: cx,
                         py: cy,
                         pw: (tile_w * 2),
-                        ph: (tile_h * 4),
+                        ph: img_height,
                         real_x: j,
                         real_y: i
                     }
@@ -816,13 +819,13 @@
                 })
 
                 //draw everything on top
-                draw_ontop.forEach(ontop=>{
-                    if(ontop.typ == "username"){
+                draw_ontop.forEach(ontop => {
+                    if (ontop.typ == "username") {
                         ctx.textAlign = "center";
                         ctx.fillStyle = "#FFF"
                         ctx.fillText(ontop.txt, ontop.x, ontop.y)
                     }
-                    if(ontop.typ == "typing"){
+                    if (ontop.typ == "typing") {
                         const typ_x = ontop.x
                         const typ_y = ontop.y
                         ctx.strokeStyle = "#000"
@@ -871,7 +874,43 @@
             }
 
             const update_map = () => {
-                imgmap.innerHTML = "";
+                imgmap.innerHTML = ""
+
+                //draw furniture
+
+                furnis.forEach(furni => {
+                    const j = furni.y
+                    const i = furni.x
+                    const tile_w = tile.width
+                    const tile_h = tile.height
+                    const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                    const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
+
+                    const found_item = items.find(item => { return item.id == furni.item_id })
+                    const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
+
+                    const img_height = item_image[item_index].height
+                    const img_width = item_image[item_index].width
+
+                    const cx = x - tile_w
+                    const cy = y - img_height + tile_h
+                    const cx1 = cx + tile_w
+                    const cy1 = cy
+                    const cx2 = cx1 + tile_w
+                    const cy2 = cy + tile_h
+                    const cx3 = cx2
+                    const cy3 = cy + img_height - tile_h
+                    const cx4 = cx1
+                    const cy4 = cy + img_height
+                    const cx5 = cx
+                    const cy5 = cy3
+                    const cx6 = cx
+                    const cy6 = cy2
+                    const item_id = Number(furni.item_id)
+
+                    imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>");
+                })
+
                 const map_j = room.map.length
                 for (let j = 0; j < map_j; j++) {
                     const map_i = room.map[j].length
@@ -887,10 +926,12 @@
                             const tm3_y = y + tile.height
                             const tm4_x = x - tile.width
                             const tm4_y = y
-                            imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='tile' shape='polygon' coords='" + tm1_x + "," + tm1_y + "," + tm2_x + "," + tm2_y + "," + tm3_x + "," + tm3_y + "," + tm4_x + "," + tm4_y + "'>");
+                            imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='tile' shape='polygon' coords='" + tm1_x + "," + tm1_y + "," + tm2_x + "," + tm2_y + "," + tm3_x + "," + tm3_y + "," + tm4_x + "," + tm4_y + "'>")
                         }
                     }
                 }
+
+
             }
 
             const do_register = () => {
@@ -945,37 +986,37 @@
                 document.querySelector("#login").style.display = "block"
             })
 
-            document.querySelector("#reg_username").addEventListener("keyup", e=>{
-                if(e.which == 13){
-                    do_register()
-                }
-            })
-            
-            document.querySelector("#reg_email").addEventListener("keyup", e=>{
-                if(e.which == 13){
+            document.querySelector("#reg_username").addEventListener("keyup", e => {
+                if (e.which == 13) {
                     do_register()
                 }
             })
 
-            document.querySelector("#reg_password").addEventListener("keyup", e=>{
-                if(e.which == 13){
+            document.querySelector("#reg_email").addEventListener("keyup", e => {
+                if (e.which == 13) {
                     do_register()
                 }
             })
 
-            document.querySelector("#conf_password").addEventListener("keyup", e=>{
-                if(e.which == 13){
+            document.querySelector("#reg_password").addEventListener("keyup", e => {
+                if (e.which == 13) {
                     do_register()
                 }
             })
 
-            document.querySelector("#login_username").addEventListener("keyup", e=>{
-                if(e.which == 13){
+            document.querySelector("#conf_password").addEventListener("keyup", e => {
+                if (e.which == 13) {
+                    do_register()
+                }
+            })
+
+            document.querySelector("#login_username").addEventListener("keyup", e => {
+                if (e.which == 13) {
                     do_login()
                 }
             })
-            document.querySelector("#login_password").addEventListener("keyup", e=>{
-                if(e.which == 13){
+            document.querySelector("#login_password").addEventListener("keyup", e => {
+                if (e.which == 13) {
                     do_login()
                 }
             })
@@ -1139,19 +1180,28 @@
 
             document.addEventListener("mousedown", e => {
                 if (e.target.className == "tile") {
-                    is_click = true;
-                    mousedown = true;
-                    temp_x = display_x - e.pageX;
-                    temp_y = display_y - e.pageY;
+                    is_click = true
+                    mousedown = true
+                    temp_x = display_x - e.pageX
+                    temp_y = display_y - e.pageY
+                }
+            });
+
+            document.addEventListener("mousedown", e => {
+                if (e.target.className == "tile") {
+                    is_click = true
+                    mousedown = true
+                    temp_x = display_x - e.pageX
+                    temp_y = display_y - e.pageY
                 }
             });
 
             document.addEventListener("touchstart", e => {
                 if (e.target.className == "tile") {
-                    is_click = true;
-                    mousedown = true;
-                    temp_x = display_x - e.touches[0].clientX;
-                    temp_y = display_y - e.touches[0].clientY;
+                    is_click = true
+                    mousedown = true
+                    temp_x = display_x - e.touches[0].clientX
+                    temp_y = display_y - e.touches[0].clientY
                 }
             });
 
@@ -1201,6 +1251,9 @@
                         cursor_x = e.target.getAttribute("x");
                         cursor_y = e.target.getAttribute("y");
                     }
+                }
+                if (e.target.className == "furniture") {
+                    console.log("hit 💜 furniture")
                 }
             });
 
@@ -1374,7 +1427,6 @@
 
             socket.on("furni", data => {
                 furnis = data
-                console.log("Furnis:", furnis)
             })
 
             let loading_count = 0

@@ -375,6 +375,7 @@
                 door_x: 0,
                 door_y: 0
             }
+            let mapping = []
 
             let typing = false;
             let typing_timer
@@ -874,10 +875,10 @@
             }
 
             const update_map = () => {
+                console.log("Map updated")
                 imgmap.innerHTML = ""
-
+                let ignore_tile = []
                 //draw furniture
-
                 furnis.forEach(furni => {
                     const j = furni.y
                     const i = furni.x
@@ -908,7 +909,12 @@
                     const cy6 = cy2
                     const item_id = Number(furni.item_id)
 
-                    imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>");
+                    if (found_item.type == "tile") {
+                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='tile' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+                    }
+                    else {
+                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+                    }
                 })
 
                 const map_j = room.map.length
@@ -1324,16 +1330,18 @@
 
             socket.on("room", (data) => {
                 data_map = JSON.parse(data.map)
+                data_map1 = JSON.parse(data.map)
                 data_door = JSON.parse(data.door)
                 room.name = data.name
                 room.map = data_map
-                graph = new Graph(room.map, { diagonal: true })
+                mapping = data_map1
+                //graph = new Graph(room.map, { diagonal: true })
                 walking.length = 0
                 room.door_x = data_door[0]
                 room.door_y = data_door[1]
                 display_x = 0 + (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width)) + (window.innerWidth / 2)
                 display_y = 0 - (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2))) + (window.innerHeight / 2)
-                update_map();
+                //update_map();
             })
 
             socket.on("player_update", (data) => {
@@ -1427,6 +1435,32 @@
 
             socket.on("furni", data => {
                 furnis = data
+                console.log("furni:", furnis)
+                console.log("Original map:", room.map)
+                
+                //update furni on maping....
+                const map1 = mapping.length
+                for(let i = 0; i < map1; i++){
+                    const map2 = mapping[i].length
+                    for(let j = 0; j < map2; j++){
+                        if(mapping[i][j] >= 1){
+                            mapping[i][j] = 1
+                        }
+                    }
+                }
+                console.log("Original1: ", room.map)
+                console.log("Mapping1: ", mapping)
+
+                //mark furni with type default as not walkable
+                furnis.forEach(furni => {
+                    const item = items.find(item_find => { return item_find.id == furni.item_id })
+                    if (item.type == "default") {
+                        console.log("Tile should disable: " + furni.x + "," + furni.y)
+                        mapping[furni.y][furni.x] = 0
+                    }
+                })
+                graph = new Graph(mapping, { diagonal: true })
+
             })
 
             let loading_count = 0
@@ -1441,6 +1475,7 @@
                         loading_count++
                         if (loading_count >= items.length) {
                             console.log("Done. loading game...")
+                            update_map()
                             game()
                         }
                         else {

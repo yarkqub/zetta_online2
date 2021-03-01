@@ -808,11 +808,23 @@
                         let draw = draw_array.filter(this_draw => { return this_draw.real_y == lukis.real_y })
                         draw.sort((a, b) => { return a.real_x - b.real_x })
                         draw.forEach(lukisan => {
-                            if (lukisan.cx == null) {
-                                ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.img.height)
+                            if (lukisan.cx != null) {
+                                //this is user....
+                                ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
                             }
                             else {
-                                ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                                //this is furni
+                                ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.img.height)
+
+                                //draw character atas tiles
+                                draw_array.forEach(pp => {
+                                    //console.log("pp.px == lukisan.px && pp.py == lukisan.py && pp.cx != null",(pp.px == lukisan.px), (pp.py == lukisan.py) ,(pp.cx != null))
+                                    if (pp.real_x == lukisan.real_x && pp.real_y == lukisan.real_y && pp.cx != null) {
+                                        ctx.drawImage(pp.img, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
+                                    }
+                                })
+
+
                             }
                         })
 
@@ -1435,32 +1447,26 @@
 
             socket.on("furni", data => {
                 furnis = data
-                console.log("furni:", furnis)
-                console.log("Original map:", room.map)
-                
+
                 //update furni on maping....
                 const map1 = mapping.length
-                for(let i = 0; i < map1; i++){
+                for (let i = 0; i < map1; i++) {
                     const map2 = mapping[i].length
-                    for(let j = 0; j < map2; j++){
-                        if(mapping[i][j] >= 1){
+                    for (let j = 0; j < map2; j++) {
+                        if (mapping[i][j] >= 1) {
                             mapping[i][j] = 1
                         }
                     }
                 }
-                console.log("Original1: ", room.map)
-                console.log("Mapping1: ", mapping)
 
                 //mark furni with type default as not walkable
                 furnis.forEach(furni => {
                     const item = items.find(item_find => { return item_find.id == furni.item_id })
                     if (item.type == "default") {
-                        console.log("Tile should disable: " + furni.x + "," + furni.y)
                         mapping[furni.y][furni.x] = 0
                     }
                 })
                 graph = new Graph(mapping, { diagonal: true })
-
             })
 
             let loading_count = 0

@@ -352,7 +352,7 @@
 
     <script>
         (() => {
-            const zetta_version = 0.15
+            const zetta_version = 0.16
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
 
             const socket = io()
@@ -1271,6 +1271,12 @@
                     cursor_x = e.target.getAttribute("x");
                     cursor_y = e.target.getAttribute("y");
                 }
+                if(e.target.className == "furniture"){
+                    if(e.target.getAttribute("furni_type") == "tile"){
+                        cursor_x = e.target.getAttribute("x");
+                        cursor_y = e.target.getAttribute("y");
+                    }
+                }
             });
 
             document.addEventListener("touchcancel", e => {
@@ -1288,6 +1294,12 @@
                         display_y = e.pageY + temp_y;
                     }
                     else {
+                        cursor_x = e.target.getAttribute("x");
+                        cursor_y = e.target.getAttribute("y");
+                    }
+                }
+                if(e.target.className == "furniture"){
+                    if(e.target.getAttribute("furni_type") == "tile"){
                         cursor_x = e.target.getAttribute("x");
                         cursor_y = e.target.getAttribute("y");
                     }
@@ -1481,10 +1493,8 @@
                 //mark furni with type default as not walkable
                 furnis.forEach(furni => {
                     const item = items.find(item_find => { return item_find.id == furni.item_id })
-                    console.log("Igtem:", item.type)
                     if (item.type == "default") {
                         mapping[furni.y][furni.x] = 0
-                        console.log("REMOVE")
                     }
                 })
                 graph = new Graph(mapping, { diagonal: true })

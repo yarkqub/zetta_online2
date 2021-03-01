@@ -347,7 +347,7 @@
     <button id="open_shop" class="in_client">Shop</button>
     <input type="text" class="in_client" id="chat_box" placeholder="Type here to chat...">
     <div class="bottom_right">
-        Furni / user maybe 
+        Furni / user maybe
     </div>
 
     <script>
@@ -914,6 +914,7 @@
 
                     const found_item = items.find(item => { return item.id == furni.item_id })
                     const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
+                    const furni_type = found_item.type
 
                     const img_height = item_image[item_index].height
                     const img_width = item_image[item_index].width
@@ -934,11 +935,11 @@
                     const cy6 = cy2
                     const item_id = Number(furni.item_id)
 
-                    if (found_item.type == "tile") {
-                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='tile' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+                    if (furni_type == "tile") {
+                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
                     }
                     else {
-                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
                     }
                 })
 
@@ -1248,6 +1249,14 @@
                     mousedown = false;
                     update_map();
                 }
+                if (e.target.className == "furniture") {
+                    if (is_click) {
+                        if(e.target.getAttribute("furni_type") == "tile"){
+                            socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
+                        }
+                        console.log("hit 💜 furniture")
+                    }
+                }
             });
 
             document.addEventListener("touchend", e => {
@@ -1282,9 +1291,6 @@
                         cursor_x = e.target.getAttribute("x");
                         cursor_y = e.target.getAttribute("y");
                     }
-                }
-                if (e.target.className == "furniture") {
-                    console.log("hit 💜 furniture")
                 }
             });
 
@@ -1475,8 +1481,10 @@
                 //mark furni with type default as not walkable
                 furnis.forEach(furni => {
                     const item = items.find(item_find => { return item_find.id == furni.item_id })
+                    console.log("Igtem:", item.type)
                     if (item.type == "default") {
                         mapping[furni.y][furni.x] = 0
+                        console.log("REMOVE")
                     }
                 })
                 graph = new Graph(mapping, { diagonal: true })

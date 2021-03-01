@@ -259,6 +259,18 @@
             position: absolute;
             left: 45px;
         }
+
+        .bottom_right {
+            background: rgb(39, 39, 39);
+            color: white;
+            width: 100px;
+            height: 150px;
+            bottom: 15px;
+            right: 15px;
+            padding: 5px;
+            position: fixed;
+            display: none;
+        }
     </style>
 </head>
 
@@ -334,6 +346,9 @@
     <button id="open_inventory" class="in_client">Inventory</button>
     <button id="open_shop" class="in_client">Shop</button>
     <input type="text" class="in_client" id="chat_box" placeholder="Type here to chat...">
+    <div class="bottom_right">
+        Furni / user maybe 
+    </div>
 
     <script>
         (() => {
@@ -815,10 +830,8 @@
                             else {
                                 //this is furni
                                 ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.img.height)
-
-                                //draw character atas tiles
+                                //draw character atas tiles / furni~
                                 draw_array.forEach(pp => {
-                                    //console.log("pp.px == lukisan.px && pp.py == lukisan.py && pp.cx != null",(pp.px == lukisan.px), (pp.py == lukisan.py) ,(pp.cx != null))
                                     if (pp.real_x == lukisan.real_x && pp.real_y == lukisan.real_y && pp.cx != null) {
                                         ctx.drawImage(pp.img, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
                                     }

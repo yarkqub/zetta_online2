@@ -347,12 +347,12 @@
     <button id="open_shop" class="in_client">Shop</button>
     <input type="text" class="in_client" id="chat_box" placeholder="Type here to chat...">
     <div class="bottom_right">
-        Furni / user maybe
+        <p id="bottom_right_title">Furni / user maybe</p>
     </div>
 
     <script>
         (() => {
-            const zetta_version = 0.16
+            const zetta_version = 0.17
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
 
             const socket = io()
@@ -363,6 +363,7 @@
             const tile_width = 64
             const touch_screen = document.querySelector("#touch_screen")
             const imgmap = document.createElement("map")
+            const bottom_right = document.querySelector(".bottom_right")
 
             const tile = {
                 width: tile_width / 2,
@@ -455,20 +456,6 @@
                 ctx.fillStyle = "#000000"
                 ctx.fillRect(0, 0, can.width, can.height)
 
-                //name and coins for top right display
-                ctx.font = "15px Arial"
-                ctx.textAlign = "end";
-                ctx.fillStyle = "#FFFFFF"
-                ctx.fillText(my_username, can.width - 20, 40)
-                ctx.fillStyle = "#FFD700"
-                ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
-
-                ctx.fillStyle = "#FAA"
-                ctx.font = "14px Arial"
-                ctx.textAlign = "start";
-                ctx.fillText("Zetta Online [v" + zetta_version + "]", 100, 20)
-                ctx.fillText("Room: " + room.name, 100, 35)
-
                 //draw reset
                 draw_array = []
                 draw_ontop = []
@@ -533,23 +520,6 @@
                             ctx.stroke()
                         }
                     }
-                }
-
-                //cursor
-                ctx.strokeStyle = "#FFFFFF"
-                ctx.lineWidth = 2
-                if (cursor_x >= 0 && cursor_y >= 0) {
-                    const tile_w = tile.width
-                    const tile_h = tile.height
-                    const cur_x = display_x + (cursor_x * (tile_w * 2) - (cursor_x * tile_w) - (cursor_y * tile_w))
-                    const cur_y = display_y + (cursor_y * (tile_h * 2) - (cursor_y * tile_h) + (cursor_x * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
-                    ctx.beginPath()
-                    ctx.moveTo(cur_x, cur_y - tile_h)
-                    ctx.lineTo(cur_x + tile_w, cur_y)
-                    ctx.lineTo(cur_x, cur_y + tile_h)
-                    ctx.lineTo(cur_x - tile_w, cur_y)
-                    ctx.closePath()
-                    ctx.stroke()
                 }
 
                 //move player
@@ -814,6 +784,23 @@
                     draw_array.push(this_drawing)
                 })
 
+                //draw cursor
+                ctx.strokeStyle = "#FFFFFF"
+                ctx.lineWidth = 2
+                if (cursor_x >= 0 && cursor_y >= 0) {
+                    const tile_w = tile.width
+                    const tile_h = tile.height
+                    const cur_x = display_x + (cursor_x * (tile_w * 2) - (cursor_x * tile_w) - (cursor_y * tile_w))
+                    const cur_y = display_y + (cursor_y * (tile_h * 2) - (cursor_y * tile_h) + (cursor_x * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
+                    ctx.beginPath()
+                    ctx.moveTo(cur_x, cur_y - tile_h)
+                    ctx.lineTo(cur_x + tile_w, cur_y)
+                    ctx.lineTo(cur_x, cur_y + tile_h)
+                    ctx.lineTo(cur_x - tile_w, cur_y)
+                    ctx.closePath()
+                    ctx.stroke()
+                }
+
                 draw_array.sort((a, b) => { return a.real_y - b.real_y })
 
                 let last_axist
@@ -894,8 +881,24 @@
                     ctx.font = 'bolder 50px'
                     ctx.fillText(chat_msg, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
                 })
-                stats.end()
 
+
+                //name and coins for top right display
+                ctx.font = "15px Arial"
+                ctx.textAlign = "end";
+                ctx.fillStyle = "#FFFFFF"
+                ctx.fillText(my_username, can.width - 20, 40)
+                ctx.fillStyle = "#FFD700"
+                ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
+
+                ctx.fillStyle = "#FAA"
+                ctx.font = "14px Arial"
+                ctx.textAlign = "start";
+                ctx.fillText("Zetta Online [v" + zetta_version + "]", 100, 20)
+                ctx.fillText("Room: " + room.name, 100, 35)
+
+
+                stats.end()
                 requestAnimationFrame(game);
             }
 
@@ -935,12 +938,8 @@
                     const cy6 = cy2
                     const item_id = Number(furni.item_id)
 
-                    if (furni_type == "tile") {
-                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
-                    }
-                    else {
-                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
-                    }
+                    imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_id='" + furni.id + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+
                 })
 
                 const map_j = room.map.length
@@ -1238,6 +1237,7 @@
             });
 
             document.addEventListener("mouseup", e => {
+                bottom_right.style.display = "none"
                 if (e.target.className == "tile") {
                     if (is_click) {
                         console.log("Is click");
@@ -1251,10 +1251,12 @@
                 }
                 if (e.target.className == "furniture") {
                     if (is_click) {
-                        if(e.target.getAttribute("furni_type") == "tile"){
+                        if (e.target.getAttribute("furni_type") == "tile") {
                             socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
                         }
-                        console.log("hit 💜 furniture")
+                        console.log("hit 💜 furniture: " + e.target.getAttribute("furni_id"))
+                        //place furni id and show on left side.... continue
+                        bottom_right.style.display = "block"
                     }
                 }
             });
@@ -1271,8 +1273,8 @@
                     cursor_x = e.target.getAttribute("x");
                     cursor_y = e.target.getAttribute("y");
                 }
-                if(e.target.className == "furniture"){
-                    if(e.target.getAttribute("furni_type") == "tile"){
+                if (e.target.className == "furniture") {
+                    if (e.target.getAttribute("furni_type") == "tile") {
                         cursor_x = e.target.getAttribute("x");
                         cursor_y = e.target.getAttribute("y");
                     }
@@ -1298,8 +1300,8 @@
                         cursor_y = e.target.getAttribute("y");
                     }
                 }
-                if(e.target.className == "furniture"){
-                    if(e.target.getAttribute("furni_type") == "tile"){
+                if (e.target.className == "furniture") {
+                    if (e.target.getAttribute("furni_type") == "tile") {
                         cursor_x = e.target.getAttribute("x");
                         cursor_y = e.target.getAttribute("y");
                     }
@@ -1382,8 +1384,8 @@
                 walking.length = 0
                 room.door_x = data_door[0]
                 room.door_y = data_door[1]
-                display_x = 0 + (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width)) + (window.innerWidth / 2)
-                display_y = 0 - (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2))) + (window.innerHeight / 2)
+                display_x = 0 + (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width)) + (window.innerWidth / 2) + 0.5
+                display_y = 0 - (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2))) + (window.innerHeight / 2) + 0.5
                 //update_map();
             })
 

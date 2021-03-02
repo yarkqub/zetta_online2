@@ -265,12 +265,18 @@
             color: white;
             width: 100px;
             height: 150px;
-            bottom: 15px;
+            bottom: 45px;
             right: 15px;
             padding: 5px;
             position: fixed;
             display: none;
             text-align: center;
+        }
+
+        #action_button_holder {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
         }
     </style>
 </head>
@@ -351,10 +357,14 @@
         <p id="bottom_right_title"></p>
         <img id="bottom_right_image" src="" />
     </div>
+    <div id="action_button_holder">
+        <button class="move">Move</button>
+        <button class="pickup">Pick Up</button>
+    </div>
 
     <script>
         (() => {
-            const zetta_version = 0.18
+            const zetta_version = 0.19
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
             const socket = io()
             let stats
@@ -871,21 +881,31 @@
 
                 //chat for players
                 chats.forEach((chat, i) => {
+                    ctx.font = 'bold 15px Arial'
                     const chat_msg = chat.username + ": " + chat.message
                     const chat_len2 = ctx.measureText(chat_msg).width + 10
                     //bubble chat
                     const pla_x = display_x + (chat.x * (tile.width * 2) - (chat.x * tile.width) - (chat.y * tile.width))
                     ctx.textAlign = "center";
                     ctx.fillStyle = "#FFF"
-                    ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
+                    //ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
+                    ctx.beginPath()
+                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 20) - 150 + 5, 5, Math.PI + (Math.PI / 2), Math.PI, true)
+                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 20) - 130 - 5, 5, Math.PI, Math.PI / 2, true)
+                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 20) - 130 - 5, 5, Math.PI / 2, 0, true)
+                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 20) - 150 + 5, 5, 0, Math.PI + (Math.PI / 2), true)
+                    ctx.closePath()
+                    ctx.strokeStyle = "#555"
+                    ctx.stroke()
+                    ctx.fill()
                     ctx.fillStyle = "#000"
-                    ctx.font = 'bolder 50px'
-                    ctx.fillText(chat_msg, pla_x, (can.height / 2) - (i * 20) + 12 - 150)
+                    
+                    ctx.fillText(chat_msg, pla_x, (can.height / 2) - (i * 20) + 15 - 150)
                 })
 
 
                 //name and coins for top right display
-                ctx.font = "15px Arial"
+                ctx.font = "normal 15px Arial"
                 ctx.textAlign = "end";
                 ctx.fillStyle = "#FFFFFF"
                 ctx.fillText(my_username, can.width - 20, 40)
@@ -893,7 +913,7 @@
                 ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
 
                 ctx.fillStyle = "#FAA"
-                ctx.font = "14px Arial"
+                ctx.font = "normal 15px Arial   "
                 ctx.textAlign = "start";
                 ctx.fillText("Zetta Online [v" + zetta_version + "]", 100, 20)
                 ctx.fillText("Room: " + room.name, 100, 35)
@@ -1225,7 +1245,6 @@
             });
 
             document.addEventListener("mouseup", e => {
-                bottom_right.style.display = "none"
                 if (e.target.className == "tile") {
                     if (is_click) {
                         socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
@@ -1374,7 +1393,6 @@
                 let p_display_y = - (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2))) + (window.innerHeight / 2)
                 display_x = Math.floor(p_display_x)
                 display_y = Math.floor(p_display_y)
-                console.log("x/y:", display_x,display_y)
             })
 
             socket.on("player_update", (data) => {

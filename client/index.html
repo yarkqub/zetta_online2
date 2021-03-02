@@ -270,6 +270,7 @@
             padding: 5px;
             position: fixed;
             display: none;
+            text-align: center;
         }
     </style>
 </head>
@@ -347,14 +348,14 @@
     <button id="open_shop" class="in_client">Shop</button>
     <input type="text" class="in_client" id="chat_box" placeholder="Type here to chat...">
     <div class="bottom_right">
-        <p id="bottom_right_title">Furni / user maybe</p>
+        <p id="bottom_right_title"></p>
+        <img id="bottom_right_image" src="" />
     </div>
 
     <script>
         (() => {
             const zetta_version = 0.17
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
-
             const socket = io()
             let stats
 
@@ -903,10 +904,10 @@
             }
 
             const update_map = () => {
-                console.log("Map updated")
                 imgmap.innerHTML = ""
                 let ignore_tile = []
-                //draw furniture
+
+                //draw furniture's map
                 furnis.forEach(furni => {
                     const j = furni.y
                     const i = furni.x
@@ -937,7 +938,6 @@
                     const cx6 = cx
                     const cy6 = cy2
                     const item_id = Number(furni.item_id)
-
                     imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_id='" + furni.id + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
 
                 })
@@ -961,8 +961,6 @@
                         }
                     }
                 }
-
-
             }
 
             const do_register = () => {
@@ -1166,7 +1164,6 @@
             let temp_y = 0
 
             touch_screen.addEventListener("mousedown", e => {
-                console.log("Mouse down")
                 mousedown = true
                 temp_x = display_x - e.pageX
                 temp_y = display_y - e.pageY
@@ -1210,16 +1207,7 @@
             let is_click = true;
 
             document.addEventListener("mousedown", e => {
-                if (e.target.className == "tile") {
-                    is_click = true
-                    mousedown = true
-                    temp_x = display_x - e.pageX
-                    temp_y = display_y - e.pageY
-                }
-            });
-
-            document.addEventListener("mousedown", e => {
-                if (e.target.className == "tile") {
+                if (e.target.className == "tile" || e.target.className == "furniture") {
                     is_click = true
                     mousedown = true
                     temp_x = display_x - e.pageX
@@ -1228,7 +1216,7 @@
             });
 
             document.addEventListener("touchstart", e => {
-                if (e.target.className == "tile") {
+                if (e.target.className == "tile" || e.target.className == "furniture") {
                     is_click = true
                     mousedown = true
                     temp_x = display_x - e.touches[0].clientX
@@ -1240,25 +1228,26 @@
                 bottom_right.style.display = "none"
                 if (e.target.className == "tile") {
                     if (is_click) {
-                        console.log("Is click");
                         socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
-                        console.log("x: " + e.target.getAttribute("x"), "y: " + e.target.getAttribute("y"))
-                    } else {
-                        console.log("IS drag");
                     }
-                    mousedown = false;
-                    update_map();
                 }
                 if (e.target.className == "furniture") {
                     if (is_click) {
                         if (e.target.getAttribute("furni_type") == "tile") {
                             socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
                         }
-                        console.log("hit 💜 furniture: " + e.target.getAttribute("furni_id"))
-                        //place furni id and show on left side.... continue
+                        //place furni id and show on left side.... continues
+                        const furni_id = e.target.getAttribute("furni_id")
                         bottom_right.style.display = "block"
+                        //get furni info and furni's image
+                        const furni_info = furnis.find(e => { return e.id == furni_id })
+                        const item_info = items.find(e => { return e.id == furni_info.item_id })
+                        document.querySelector("#bottom_right_title").innerHTML = item_info.name
+                        document.querySelector("#bottom_right_image").src = "items/" + item_info.image
                     }
                 }
+                mousedown = false
+                update_map()
             });
 
             document.addEventListener("touchend", e => {
@@ -1289,27 +1278,24 @@
             });
 
             document.addEventListener("mousemove", e => {
-                if (e.target.className == "tile") {
+                const target_class = e.target.className
+                if (target_class == "tile" || target_class == "furniture") {
                     if (mousedown) {
-                        is_click = false;
-                        display_x = e.pageX + temp_x;
-                        display_y = e.pageY + temp_y;
+                        is_click = false
+                        display_x = e.pageX + temp_x
+                        display_y = e.pageY + temp_y
                     }
                     else {
-                        cursor_x = e.target.getAttribute("x");
-                        cursor_y = e.target.getAttribute("y");
-                    }
-                }
-                if (e.target.className == "furniture") {
-                    if (e.target.getAttribute("furni_type") == "tile") {
-                        cursor_x = e.target.getAttribute("x");
-                        cursor_y = e.target.getAttribute("y");
+                        if (target_class == "tile" || e.target.getAttribute("furni_type") == "tile") {
+                            cursor_x = e.target.getAttribute("x")
+                            cursor_y = e.target.getAttribute("y")
+                        }
                     }
                 }
             });
 
             document.addEventListener("touchmove", e => {
-                if (e.target.className == "tile") {
+                if (e.target.className == "tile" || e.target.className == "furniture") {
                     if (mousedown) {
                         is_click = false;
                         display_x = e.touches[0].clientX + temp_x;
@@ -1480,7 +1466,7 @@
 
             socket.on("furni", data => {
                 furnis = data
-
+                console.log("Furniture:", furnis)
                 //update furni on maping....
                 const map1 = mapping.length
                 for (let i = 0; i < map1; i++) {

@@ -265,7 +265,7 @@
             color: white;
             width: 100px;
             height: 150px;
-            bottom: 45px;
+            bottom: 80px;
             right: 15px;
             padding: 5px;
             position: fixed;
@@ -275,8 +275,10 @@
 
         #action_button_holder {
             position: fixed;
-            bottom: 15px;
+            bottom: 60px;
             right: 15px;
+            display: none;
+            z-index: 4;
         }
     </style>
 </head>
@@ -370,19 +372,23 @@
             let stats
 
             const can = document.querySelector("#can")
-            const ctx = can.getContext("2d", { alpha: false })
+            const ctx = can.getContext("2d")
             const tile_width = 64
             const touch_screen = document.querySelector("#touch_screen")
             const imgmap = document.createElement("map")
             const bottom_right = document.querySelector(".bottom_right")
+            const action_button_holder = document.querySelector("#action_button_holder")
 
             const tile = {
                 width: tile_width / 2,
                 height: tile_width / 4
             }
 
-            let display_x = window.innerWidth / 2
-            let display_y = window.innerHeight / 2
+            const tile_w = tile.width
+            const tile_h = tile.height
+
+            let display_x = 0
+            let display_y = 0
             let players = []
             let furnis = []
             let items = []
@@ -391,6 +397,8 @@
             let my_username = ""
             let my_coins = ""
             let room_type = "public"
+
+            let move_furni = 0
 
             let cursor_x = -1
             let cursor_y = -1
@@ -466,7 +474,6 @@
                 //clear canvas
                 ctx.fillStyle = "#000000"
                 ctx.fillRect(0, 0, can.width, can.height)
-
                 //draw reset
                 draw_array = []
                 draw_ontop = []
@@ -477,8 +484,6 @@
                     const map_i = room.map[j].length
                     for (let i = 0; i < map_i; i++) {
                         if (room.map[j][i]) {
-                            const tile_w = tile.width
-                            const tile_h = tile.height
                             const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
                             const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
                             //ys = y's shadow
@@ -617,11 +622,9 @@
                 players.forEach(player => {
                     const player_x = player.x
                     const player_y = player.y
-                    const tile_h = tile.height
-                    const tile_w = tile.width
                     const char_w = character.width
                     const char_h = character.height
-                    const pla_x = display_x + (player_x * (tile.width * 2) - (player_x * tile.width) - (player_y * tile.width))
+                    const pla_x = display_x + (player_x * (tile_w * 2) - (player_x * tile_w) - (player_y * tile_w))
                     const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2)))
 
                     const ontop = {
@@ -764,21 +767,16 @@
                 furnis.forEach(furni => {
                     const j = furni.y
                     const i = furni.x
-                    const tile_w = tile.width
-                    const tile_h = tile.height
                     const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
                     const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
 
-                    const found_item = items.find(item => { return item.id == furni.item_id })
                     const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
 
                     const img_height = item_image[item_index].height
 
                     const cx = x - tile_w
-                    //const cy = y - tile_h - (found_item.height * (tile_h * 2))
                     const cy = y - item_image[item_index].height + tile_h
 
-                    //ctx.drawImage(item_image[item_index], cx, cy, (tile_w * 2), (tile_h * 4));
                     const this_drawing = {
                         img: item_image[item_index],
                         cx: null,
@@ -799,8 +797,6 @@
                 ctx.strokeStyle = "#FFFFFF"
                 ctx.lineWidth = 2
                 if (cursor_x >= 0 && cursor_y >= 0) {
-                    const tile_w = tile.width
-                    const tile_h = tile.height
                     const cur_x = display_x + (cursor_x * (tile_w * 2) - (cursor_x * tile_w) - (cursor_y * tile_w))
                     const cur_y = display_y + (cursor_y * (tile_h * 2) - (cursor_y * tile_h) + (cursor_x * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
                     ctx.beginPath()
@@ -878,14 +874,38 @@
                     }
                 })
 
+                // draw move furni shadow
+                if (move_furni) {
+                    const i = cursor_x
+                    const j = cursor_y
+                    const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                    const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
+
+                    const furni_info = furnis.find(e => e.id == move_furni)
+                    const item_index = items.map(item => { return item.id }).indexOf(furni_info.item_id)
+
+                    const cx = x - tile_w
+                    const cy = y - item_image[item_index].height + tile_h
+                    ctx.save()
+                    ctx.globalAlpha = 0.5;
+                    ctx.drawImage(item_image[item_index], cx, cy)
+                    ctx.restore()
+                }
+
 
                 //chat for players
                 chats.forEach((chat, i) => {
                     ctx.font = 'bold 15px Arial'
-                    const chat_msg = chat.username + ": " + chat.message
-                    const chat_len2 = ctx.measureText(chat_msg).width + 10
+                    const chat_username = chat.username + ": "
+                    const chat_username_length = ctx.measureText(chat_username).width + 5
+                    ctx.font = 'normal 15px Arial'
+                    const chat_message = chat.message
+                    const chat_message_length = ctx.measureText(chat_message).width + 5
+                    const chat_len2 = chat_username_length + chat_message_length
+                    //const chat_msg = chat.username + ": " + chat.message
+                    //const chat_len2 = ctx.measureText(chat_msg).width + 10
                     //bubble chat
-                    const pla_x = display_x + (chat.x * (tile.width * 2) - (chat.x * tile.width) - (chat.y * tile.width))
+                    const pla_x = display_x + (chat.x * (tile_w * 2) - (chat.x * tile_w) - (chat.y * tile_w))
                     ctx.textAlign = "center";
                     ctx.fillStyle = "#FFF"
                     //ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
@@ -899,8 +919,12 @@
                     ctx.stroke()
                     ctx.fill()
                     ctx.fillStyle = "#000"
-                    
-                    ctx.fillText(chat_msg, pla_x, (can.height / 2) - (i * 20) + 15 - 150)
+
+                    ctx.textAlign = "start";
+                    ctx.font = 'bold 15px Arial'
+                    ctx.fillText(chat_username, pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 20) + 15 - 150)
+                    ctx.font = "normal 15px Arial"
+                    ctx.fillText(chat_message, pla_x - (chat_len2 / 2) + chat_username_length, (can.height / 2) - (i * 20) + 15 - 150)
                 })
 
 
@@ -931,8 +955,6 @@
                 furnis.forEach(furni => {
                     const j = furni.y
                     const i = furni.x
-                    const tile_w = tile.width
-                    const tile_h = tile.height
                     const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
                     const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
 
@@ -967,15 +989,15 @@
                     const map_i = room.map[j].length
                     for (let i = 0; i < map_i; i++) {
                         if (room.map[j][i]) {
-                            const x = display_x + (i * (tile.width * 2) - (i * tile.width) - (j * tile.width))
-                            const y = display_y + (j * (tile.height * 2) - (j * tile.height) + (i * tile.height) - (room.map[j][i] * (tile.height / 2)))
+                            const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                            const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
                             const tm1_x = x
-                            const tm1_y = y - tile.height
-                            const tm2_x = x + tile.width
+                            const tm1_y = y - tile_h
+                            const tm2_x = x + tile_w
                             const tm2_y = y
                             const tm3_x = x
-                            const tm3_y = y + tile.height
-                            const tm4_x = x - tile.width
+                            const tm3_y = y + tile_h
+                            const tm4_x = x - tile_w
                             const tm4_y = y
                             imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' class='tile' shape='polygon' coords='" + tm1_x + "," + tm1_y + "," + tm2_x + "," + tm2_y + "," + tm3_x + "," + tm3_y + "," + tm4_x + "," + tm4_y + "'>")
                         }
@@ -1196,29 +1218,38 @@
             })
 
             touch_screen.addEventListener("mouseup", () => {
+                bottom_right.style.display = "none"
+                action_button_holder.style.display = "none"
+                move_furni = 0
                 mousedown = false
                 update_map()
             });
             touch_screen.addEventListener("touchend", () => {
                 mousedown = false
                 update_map()
+                bottom_right.style.display = "none"
+                action_button_holder.style.display = "none"
+                move_furni = 0
             });
             touch_screen.addEventListener("touchcancel", () => {
                 mousedown = false
                 update_map()
+                bottom_right.style.display = "none"
+                action_button_holder.style.display = "none"
+                move_furni = 0
             });
 
             touch_screen.addEventListener("mousemove", e => {
                 if (mousedown) {
-                    display_x = e.pageX + temp_x
-                    display_y = e.pageY + temp_y
+                    display_x = Math.floor(e.pageX + temp_x)
+                    display_y = Math.floor(e.pageY + temp_y)
                 }
             });
 
             touch_screen.addEventListener("touchmove", e => {
                 if (mousedown) {
-                    display_x = e.touches[0].clientX + temp_x;
-                    display_y = e.touches[0].clientY + temp_y;
+                    display_x = Math.floor(e.touches[0].clientX + temp_x)
+                    display_y = Math.floor(e.touches[0].clientY + temp_y)
                 }
             });
 
@@ -1247,6 +1278,9 @@
             document.addEventListener("mouseup", e => {
                 if (e.target.className == "tile") {
                     if (is_click) {
+                        bottom_right.style.display = "none"
+                        action_button_holder.style.display = "none"
+                        move_furni = 0
                         socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
                     }
                 }
@@ -1257,7 +1291,9 @@
                         }
                         //place furni id and show on left side.... continues
                         const furni_id = e.target.getAttribute("furni_id")
+                        move_furni = furni_id
                         bottom_right.style.display = "block"
+                        action_button_holder.style.display = "block"
                         //get furni info and furni's image
                         const furni_info = furnis.find(e => { return e.id == furni_id })
                         const item_info = items.find(e => { return e.id == furni_info.item_id })
@@ -1301,8 +1337,8 @@
                 if (target_class == "tile" || target_class == "furniture") {
                     if (mousedown) {
                         is_click = false
-                        display_x = e.pageX + temp_x
-                        display_y = e.pageY + temp_y
+                        display_x = Math.floor(e.pageX + temp_x)
+                        display_y = Math.floor(e.pageY + temp_y)
                     }
                     else {
                         if (target_class == "tile" || e.target.getAttribute("furni_type") == "tile") {
@@ -1317,8 +1353,8 @@
                 if (e.target.className == "tile" || e.target.className == "furniture") {
                     if (mousedown) {
                         is_click = false;
-                        display_x = e.touches[0].clientX + temp_x;
-                        display_y = e.touches[0].clientY + temp_y;
+                        display_x = Math.floor(e.touches[0].clientX + temp_x)
+                        display_y = Math.floor(e.touches[0].clientY + temp_y)
                     }
                 }
             });
@@ -1380,17 +1416,18 @@
 
             socket.on("room", (data) => {
                 data_map = JSON.parse(data.map)
+                room.map = data_map
                 data_map1 = JSON.parse(data.map)
+                mapping = data_map1
                 data_door = JSON.parse(data.door)
                 room.name = data.name
-                room.map = data_map
-                mapping = data_map1
+
                 //graph = new Graph(room.map, { diagonal: true })
                 walking.length = 0
                 room.door_x = data_door[0]
                 room.door_y = data_door[1]
-                let p_display_x = (data_door[1] * (tile.width * 2) - (data_door[1] * tile.width) - (data_door[0] * tile.width)) + (window.innerWidth / 2)
-                let p_display_y = - (data_door[0] * (tile.height * 2) - (data_door[0] * tile.height) + (data_door[1] * tile.height) - (room.map[data_door[0]][data_door[1]] * (tile.height / 2))) + (window.innerHeight / 2)
+                let p_display_x = (data_door[1] * (tile_w * 2) - (data_door[1] * tile_w) - (data_door[0] * tile_w)) + (window.innerWidth / 2)
+                let p_display_y = - (data_door[0] * (tile_h * 2) - (data_door[0] * tile_h) + (data_door[1] * tile_h) - (room.map[data_door[0]][data_door[1]] * (tile_h / 2))) + (window.innerHeight / 2)
                 display_x = Math.floor(p_display_x)
                 display_y = Math.floor(p_display_y)
             })
@@ -1524,6 +1561,12 @@
                             game()
                         }
                         else {
+                            ctx.fillStyle = "#000"
+                            ctx.fillRect(0, 0, can.width, can.height)
+                            ctx.strokeStyle = "#0F0"
+                            ctx.font = "bold 15px Arial"
+                            ctx.textAlign = "center"
+                            ctx.fillText("Loading game... " + loading_count + "/" + items.length, can.width / 2, can.height / 2)
                             console.log(loading_count + "/" + items.length)
                         }
                     }

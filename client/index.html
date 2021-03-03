@@ -895,10 +895,10 @@
 
                 //chat for players
                 chats.forEach((chat, i) => {
-                    ctx.font = 'bold 15px Arial'
+                    //ctx.font = 'bold 15px Arial'
                     const chat_username = chat.username + ": "
                     const chat_username_length = ctx.measureText(chat_username).width + 5
-                    ctx.font = 'normal 15px Arial'
+                    //ctx.font = 'normal 15px Arial'
                     const chat_message = chat.message
                     const chat_message_length = ctx.measureText(chat_message).width + 5
                     const chat_len2 = chat_username_length + chat_message_length

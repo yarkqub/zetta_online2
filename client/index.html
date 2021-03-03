@@ -790,7 +790,9 @@
                         real_x: j,
                         real_y: i
                     }
-                    draw_array.push(this_drawing)
+                    if (move_furni != furni.id) {
+                        draw_array.push(this_drawing)
+                    }
                 })
 
                 //draw cursor
@@ -892,8 +894,7 @@
                     ctx.restore()
                 }
 
-
-                //chat for players
+                //chat for players / bubble chat
                 chats.forEach((chat, i) => {
                     ctx.font = 'bold 15px Arial'
                     const chat_username = chat.username + ": "
@@ -902,18 +903,16 @@
                     const chat_message = chat.message
                     const chat_message_length = ctx.measureText(chat_message).width + 5
                     const chat_len2 = chat_username_length + chat_message_length
-                    //const chat_msg = chat.username + ": " + chat.message
-                    //const chat_len2 = ctx.measureText(chat_msg).width + 10
-                    //bubble chat
+
                     const pla_x = display_x + (chat.x * (tile_w * 2) - (chat.x * tile_w) - (chat.y * tile_w))
                     ctx.textAlign = "center";
                     ctx.fillStyle = "#FFF"
-                    //ctx.fillRect(pla_x - (chat_len2 / 2), (can.height / 2) - (i * 20) - 150, chat_len2, 18)
+
                     ctx.beginPath()
-                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 20) - 150 + 5, 5, Math.PI + (Math.PI / 2), Math.PI, true)
-                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 20) - 130 - 5, 5, Math.PI, Math.PI / 2, true)
-                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 20) - 130 - 5, 5, Math.PI / 2, 0, true)
-                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 20) - 150 + 5, 5, 0, Math.PI + (Math.PI / 2), true)
+                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) - 150 + 5, 5, Math.PI + (Math.PI / 2), Math.PI, true)
+                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) - 130 - 5, 5, Math.PI, Math.PI / 2, true)
+                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 25) - 130 - 5, 5, Math.PI / 2, 0, true)
+                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 25) - 150 + 5, 5, 0, Math.PI + (Math.PI / 2), true)
                     ctx.closePath()
                     ctx.strokeStyle = "#555"
                     ctx.stroke()
@@ -922,9 +921,9 @@
 
                     ctx.textAlign = "start";
                     ctx.font = 'bold 15px Arial'
-                    ctx.fillText(chat_username, pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 20) + 15 - 150)
+                    ctx.fillText(chat_username, pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) + 15 - 150)
                     ctx.font = "normal 15px Arial"
-                    ctx.fillText(chat_message, pla_x - (chat_len2 / 2) + chat_username_length, (can.height / 2) - (i * 20) + 15 - 150)
+                    ctx.fillText(chat_message, pla_x - (chat_len2 / 2) + chat_username_length, (can.height / 2) - (i * 25) + 15 - 150)
                 })
 
 

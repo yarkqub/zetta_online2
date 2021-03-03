@@ -366,7 +366,7 @@
 
     <script>
         (() => {
-            const zetta_version = 0.19
+            const zetta_version = 0.20
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
             const socket = io()
             let stats
@@ -378,6 +378,7 @@
             const imgmap = document.createElement("map")
             const bottom_right = document.querySelector(".bottom_right")
             const action_button_holder = document.querySelector("#action_button_holder")
+            const move_furniture = document.querySelector(".move")
 
             const tile = {
                 width: tile_width / 2,
@@ -398,6 +399,7 @@
             let my_coins = ""
             let room_type = "public"
 
+            let selected_furni = 0
             let move_furni = 0
 
             let cursor_x = -1
@@ -791,6 +793,7 @@
                         real_y: i
                     }
                     if (move_furni != furni.id) {
+                        //if furni on move, no need to show here
                         draw_array.push(this_drawing)
                     }
                 })
@@ -1116,6 +1119,10 @@
                 }
             })
 
+            move_furniture.addEventListener("click", ()=>{
+                move_furni = selected_furni
+            })
+
 
 
             ////////////// Floating menu draf event //////////////////////
@@ -1220,6 +1227,7 @@
                 bottom_right.style.display = "none"
                 action_button_holder.style.display = "none"
                 move_furni = 0
+                selected_furni = 0
                 mousedown = false
                 update_map()
             });
@@ -1229,6 +1237,7 @@
                 bottom_right.style.display = "none"
                 action_button_holder.style.display = "none"
                 move_furni = 0
+                selected_furni = 0
             });
             touch_screen.addEventListener("touchcancel", () => {
                 mousedown = false
@@ -1236,6 +1245,7 @@
                 bottom_right.style.display = "none"
                 action_button_holder.style.display = "none"
                 move_furni = 0
+                selected_furni = 0
             });
 
             touch_screen.addEventListener("mousemove", e => {
@@ -1280,6 +1290,7 @@
                         bottom_right.style.display = "none"
                         action_button_holder.style.display = "none"
                         move_furni = 0
+                        selected_furni = 0
                         socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
                     }
                 }
@@ -1290,7 +1301,8 @@
                         }
                         //place furni id and show on left side.... continues
                         const furni_id = e.target.getAttribute("furni_id")
-                        move_furni = furni_id
+                        //move_furni = furni_id
+                        selected_furni = furni_id
                         bottom_right.style.display = "block"
                         action_button_holder.style.display = "block"
                         //get furni info and furni's image
@@ -1556,15 +1568,24 @@
                         loading_count++
                         if (loading_count >= items.length) {
                             console.log("Done. loading game...")
+
+                            ctx.fillStyle = "#000"
+                            ctx.fillRect(0, 0, can.width, can.height)
+                            ctx.font = "bold 15px Arial"
+                            ctx.textAlign = "center"
+                            ctx.fillStyle = "#0F0"
+                            ctx.fillText("Welcome to zetta Online....", can.width / 2, can.height / 2)
+                            
                             update_map()
-                            game()
+                            setTimeout(game, 2000)
+                            //game()
                         }
                         else {
                             ctx.fillStyle = "#000"
                             ctx.fillRect(0, 0, can.width, can.height)
-                            ctx.strokeStyle = "#0F0"
                             ctx.font = "bold 15px Arial"
                             ctx.textAlign = "center"
+                            ctx.fillStyle = "#0F0"
                             ctx.fillText("Loading game... " + loading_count + "/" + items.length, can.width / 2, can.height / 2)
                             console.log(loading_count + "/" + items.length)
                         }

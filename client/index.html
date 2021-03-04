@@ -951,8 +951,6 @@
 
             const update_map = () => {
                 imgmap.innerHTML = ""
-                let ignore_tile = []
-
                 //draw furniture's map
                 furnis.forEach(furni => {
                     const j = furni.y
@@ -982,8 +980,9 @@
                     const cx6 = cx
                     const cy6 = cy2
                     const item_id = Number(furni.item_id)
-                    imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_id='" + furni.id + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
-
+                    if (furni.id != move_furni) {
+                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_id='" + furni.id + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+                    }
                 })
 
                 const map_j = room.map.length
@@ -1119,8 +1118,9 @@
                 }
             })
 
-            move_furniture.addEventListener("click", ()=>{
+            move_furniture.addEventListener("click", () => {
                 move_furni = selected_furni
+                update_map()
             })
 
 
@@ -1289,9 +1289,14 @@
                     if (is_click) {
                         bottom_right.style.display = "none"
                         action_button_holder.style.display = "none"
-                        move_furni = 0
-                        selected_furni = 0
-                        socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
+                        if (move_furni) {
+                            socket.emit("place_furni", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y"), id: move_furni })
+                            move_furni = 0
+                            selected_furni = 0
+                        }
+                        else {
+                            socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
+                        }
                     }
                 }
                 if (e.target.className == "furniture") {
@@ -1533,27 +1538,30 @@
             })
 
             socket.on("furni", data => {
-                furnis = data
-                console.log("Furniture:", furnis)
-                //update furni on maping....
-                const map1 = mapping.length
-                for (let i = 0; i < map1; i++) {
-                    const map2 = mapping[i].length
-                    for (let j = 0; j < map2; j++) {
-                        if (mapping[i][j] >= 1) {
-                            mapping[i][j] = 1
+                setTimeout(() => {
+                    furnis = data
+                    console.log("Furniture:", furnis)
+                    //update furni on maping....
+                    const map1 = mapping.length
+                    for (let i = 0; i < map1; i++) {
+                        const map2 = mapping[i].length
+                        for (let j = 0; j < map2; j++) {
+                            if (mapping[i][j] >= 1) {
+                                mapping[i][j] = 1
+                            }
                         }
                     }
-                }
 
-                //mark furni with type default as not walkable
-                furnis.forEach(furni => {
-                    const item = items.find(item_find => { return item_find.id == furni.item_id })
-                    if (item.type == "default") {
-                        mapping[furni.y][furni.x] = 0
-                    }
-                })
-                graph = new Graph(mapping, { diagonal: true })
+                    //mark furni with type default as not walkable
+                    furnis.forEach(furni => {
+                        const item = items.find(item_find => { return item_find.id == furni.item_id })
+                        if (item.type == "default") {
+                            mapping[furni.y][furni.x] = 0
+                        }
+                    })
+                    graph = new Graph(mapping, { diagonal: true })
+
+                }, 500)
             })
 
             let loading_count = 0
@@ -1575,7 +1583,7 @@
                             ctx.textAlign = "center"
                             ctx.fillStyle = "#0F0"
                             ctx.fillText("Welcome to zetta Online....", can.width / 2, can.height / 2)
-                            
+
                             update_map()
                             setTimeout(game, 2000)
                             //game()
@@ -1592,6 +1600,32 @@
                     }
                     img.onerror = () => { alert("Item loading error"); }
                 }
+            })
+
+            socket.on("update_room", data => {
+                data_map = JSON.parse(data.map)
+                room.map = data_map
+                data_map1 = JSON.parse(data.map)
+                mapping = data_map1
+                furnis = data.furni
+                //update path finder
+                const map1 = mapping.length
+                for (let i = 0; i < map1; i++) {
+                    const map2 = mapping[i].length
+                    for (let j = 0; j < map2; j++) {
+                        if (mapping[i][j] >= 1) {
+                            mapping[i][j] = 1
+                        }
+                    }
+                }
+                //mark furni with type default as not walkable
+                furnis.forEach(furni => {
+                    const item = items.find(item_find => { return item_find.id == furni.item_id })
+                    if (item.type == "default") {
+                        mapping[furni.y][furni.x] = 0
+                    }
+                })
+                graph = new Graph(mapping, { diagonal: true })
             })
 
 

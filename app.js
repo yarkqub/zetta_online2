@@ -141,6 +141,24 @@ io.on('connection', (socket) => {
 
     }
 
+    socket.on("place_furni", data => {
+        
+        const rid = socket.my_room
+        let mapx
+        let furnis = []
+        db.run("UPDATE furniture SET x = ?, y = ? WHERE id = ?", data.x, data.y, data.id, ()=>{
+            db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res)=>{
+                mapx = res.map
+            }, ()=>{
+                db.each("SELECT * FROM furniture WHERE room = ?", rid, (err1, res1) => {
+                    furnis.push(res1)
+                }, ()=>{
+                    socket.emit("update_room", {map: mapx, furni: furnis})
+                })
+            })
+        })
+    })
+
     socket.on("move", data => {
         if (players) {
             const player = players.filter(player => { return player.socket == socket.id })
@@ -205,7 +223,7 @@ io.on('connection', (socket) => {
                                 join_room("1");
                             })
 
-                            
+
                         }
                         else {
                             socket.emit("message", { type: "error_message", message: "Password incorrect" })

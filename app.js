@@ -153,7 +153,7 @@ io.on('connection', (socket) => {
                 db.each("SELECT * FROM furniture WHERE room = ?", rid, (err1, res1) => {
                     furnis.push(res1)
                 }, ()=>{
-                    socket.emit("update_room", {map: mapx, furni: furnis})
+                    io.in(socket.my_room).emit("update_room", {map: mapx, furni: furnis})
                 })
             })
         })

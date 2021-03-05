@@ -141,6 +141,18 @@ io.on('connection', (socket) => {
 
     }
 
+    socket.on("shop_list", data=>{
+        if(!data){
+            let res_arr = []
+            db.each("SELECT * FROM shop_pages WHERE parent = '-1'", (err, res)=>{
+                res_arr.push(res)
+                console.log("RES:", res)
+            }, ()=>{
+                socket.emit("shop_list", res_arr)
+            })
+        }
+    })
+
     socket.on("place_furni", data => {
         
         const rid = socket.my_room

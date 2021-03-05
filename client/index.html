@@ -280,6 +280,32 @@
             display: none;
             z-index: 4;
         }
+
+        #shop_content {
+            position: relative;
+            top: 1px;
+            left: 0px;
+            width: 100%;
+            height: calc(100% - 67px);
+        }
+
+        #shop_list {
+            background: green;
+            position: absolute;
+            width: 35%;
+            height: 100%;
+            top: 0px;
+            left: 0px;
+        }
+
+        #shop_item_list {
+            background: red;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 65%;
+            height: 100%;
+        }
     </style>
 </head>
 
@@ -308,7 +334,10 @@
                 <button class="shop_type" data="furniture">Furniture</button>
             </div>
         </div>
-        <div class="shop_list"></div>
+        <div id="shop_content">
+            <div id="shop_list"></div>
+            <div id="shop_item_list"></div>
+        </div>
     </div>
 
     <div id="inventory" class="floating_window">
@@ -1144,7 +1173,7 @@
             })
             document.querySelector("#open_shop").addEventListener("click", () => {
                 document.querySelector("#shop").style.display = "block"
-
+                socket.emit("shop_list")
             })
             document.querySelector("#open_inventory").addEventListener("click", () => {
                 document.querySelector("#inventory").style.display = "block"
@@ -1626,6 +1655,15 @@
                     }
                 })
                 graph = new Graph(mapping, { diagonal: true })
+            })
+
+            const shop_listz = document.querySelector("#shop_list")
+            socket.on("shop_list", data => {
+                console.log(data)
+                shop_listz.innerHtml = ""
+                data.forEach(dat =>{
+                    shop_listz.insertAdjacentHTML('beforeend', '<div class="shop_page" page="' + dat.id + '>' + dat.name + '</div>');
+                })
             })
 
 

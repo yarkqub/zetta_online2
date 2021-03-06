@@ -296,6 +296,7 @@
             height: 100%;
             top: 0px;
             left: 0px;
+            overflow-y: scroll;
         }
 
         #shop_item_list {
@@ -306,6 +307,16 @@
             width: 65%;
             height: 100%;
         }
+
+        .shop_pages:nth-child(odd) {
+            background: #AA8800;
+            color:white;
+        }
+        .shop_pages:nth-child(even) {
+            background: #0088AA;
+            color:white;
+        }
+
     </style>
 </head>
 
@@ -1657,12 +1668,23 @@
                 graph = new Graph(mapping, { diagonal: true })
             })
 
-            const shop_listz = document.querySelector("#shop_list")
+            /*const shop_listz = document.querySelector("#shop_list")
             socket.on("shop_list", data => {
                 console.log(data)
                 shop_listz.innerHtml = ""
                 data.forEach(dat =>{
+                    console.log("Some:", dat.id)
+                    console.log("Some:", dat.id)
                     shop_listz.insertAdjacentHTML('beforeend', '<div class="shop_page" page="' + dat.id + '>' + dat.name + '</div>');
+                })
+            })*/
+
+            const shop_list = document.querySelector("#shop_list")
+            shop_list.insertAdjacentHTML("beforeend", "<h1>HELLO WORLD</h1>")
+            socket.on("shop_list", data=>{
+                shop_list.innerHTML = ""
+                data.forEach(dat=>{
+                    shop_list.insertAdjacentHTML("beforeend", "<div class='shop_pages' data='" + dat.id + "'>" + dat.name + "</div>")
                 })
             })
 

@@ -18,7 +18,7 @@
         }
 
         #form {
-            background-color: rgb(202, 255, 255);
+            background: linear-gradient(193deg, #667db6, #0082c8, #0082c8, #667db6);
             padding: 8px;
             width: 100vw;
             height: 100vh;
@@ -290,7 +290,6 @@
         }
 
         #shop_list {
-            background: green;
             position: absolute;
             width: 35%;
             height: 100%;
@@ -300,7 +299,6 @@
         }
 
         #shop_item_list {
-            background: red;
             position: absolute;
             top: 0px;
             right: 0px;
@@ -308,15 +306,35 @@
             height: 100%;
         }
 
-        .shop_pages:nth-child(odd) {
-            background: #AA8800;
-            color:white;
-        }
-        .shop_pages:nth-child(even) {
-            background: #0088AA;
-            color:white;
+        .shop_pages {
+            cursor: pointer;
+            font-size: 12px;
+            padding: 5px;
         }
 
+        .shop_pages:nth-child(odd) {
+            background: #D5EDFF;
+        }
+
+        .shop_pages:nth-child(even) {
+            background: #FFFFFF;
+        }
+        .shop_item {
+            border: 1px solid black;
+            width: 85px;
+            height: 105px;
+            float: left;
+            margin: 5px;
+            background: #DDDDDD;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .shop_item:hover{
+            background: #FFFFFF;
+            padding: 5px;
+            margin: 0px;
+        }
     </style>
 </head>
 
@@ -347,7 +365,7 @@
         </div>
         <div id="shop_content">
             <div id="shop_list"></div>
-            <div id="shop_item_list"></div>
+            <div id="shop_item_list">Please select a page on left</div>
         </div>
     </div>
 
@@ -365,6 +383,7 @@
     </div>
 
     <div id="form">
+        <h3>Zetta Online</h3>
         <div id="login">
             <h1>Login</h1>
             <label for="login_username">Username: </label><input class="input" type="text" name=""
@@ -406,7 +425,7 @@
 
     <script>
         (() => {
-            const zetta_version = 0.21
+            const zetta_version = 0.22
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
             const socket = io()
             let stats
@@ -976,7 +995,7 @@
                 ctx.fillStyle = "#FFFFFF"
                 ctx.fillText(my_username, can.width - 20, 40)
                 ctx.fillStyle = "#FFD700"
-                ctx.fillText("Coins: " + my_coins, can.width - 20, 60)
+                ctx.fillText("💰: " + my_coins, can.width - 20, 60)
 
                 ctx.fillStyle = "#FAA"
                 ctx.font = "normal 15px Arial   "
@@ -1435,6 +1454,10 @@
                         document.querySelector("#room_nav").style.display = "none"
                         chats = []
                     }
+                    if (e == "shop_pages") {
+                        console.log("Hello world...", el.target.getAttribute("data"))
+                        socket.emit("shop_list", el.target.getAttribute("data"))
+                    }
                 })
             })
 
@@ -1668,25 +1691,24 @@
                 graph = new Graph(mapping, { diagonal: true })
             })
 
-            /*const shop_listz = document.querySelector("#shop_list")
-            socket.on("shop_list", data => {
-                console.log(data)
-                shop_listz.innerHtml = ""
-                data.forEach(dat =>{
-                    console.log("Some:", dat.id)
-                    console.log("Some:", dat.id)
-                    shop_listz.insertAdjacentHTML('beforeend', '<div class="shop_page" page="' + dat.id + '>' + dat.name + '</div>');
-                })
-            })*/
-
             const shop_list = document.querySelector("#shop_list")
-            shop_list.insertAdjacentHTML("beforeend", "<h1>HELLO WORLD</h1>")
-            socket.on("shop_list", data=>{
+            socket.on("shop_list", data => {
                 shop_list.innerHTML = ""
-                data.forEach(dat=>{
+                data.forEach(dat => {
                     shop_list.insertAdjacentHTML("beforeend", "<div class='shop_pages' data='" + dat.id + "'>" + dat.name + "</div>")
                 })
             })
+
+            const shop_item_list = document.querySelector("#shop_item_list")
+            socket.on("shop_item_list", data => {
+                console.log("Furni for page~")
+                shop_item_list.innerHTML = ""
+                data.forEach(dat => {
+                    let item_kedai = items.find(item=>{ return item.id == dat.item_id})
+                    shop_item_list.insertAdjacentHTML("beforeend", "<div class='shop_item' data=''><img src='items/" + item_kedai.image + "'><br>" + dat.name + "<br>" + dat.price + " 💰</div>")
+                })
+            })
+
 
 
         })()

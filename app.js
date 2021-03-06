@@ -22,7 +22,7 @@ db.serialize(() => {
         db.run("CREATE TABLE rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, owner INTEGER, map TEXT, door TEXT)")
         db.run("CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, image TEXT, width INTEGER, height INTEGER)")
         db.run("CREATE TABLE shop_pages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, order_num TEXT, parent INTEGER)")
-        db.run("CREATE TABLE shop_items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, item_id INTEGER, price REAL, is_limmited INTEGER, item_left INTEGER)")
+        db.run("CREATE TABLE shop_items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, item_id INTEGER, page_id INTEGER, price REAL, is_limmited INTEGER, item_left INTEGER)")
         db.run("CREATE TABLE furniture (id INTEGER PRIMARY KEY AUTOINCREMENT, item_id INTEGER, owner INTEGER, room INTEGER, x INTEGER, y INTEGER)")
         db.run("INSERT INTO rooms (name, owner, map, door) VALUES ('Welcome Lounge', '0', '[[0, 0, 0, 0, 1, 0, 0, 0, 0],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1]]', '[4, 0]')")
     }
@@ -141,31 +141,46 @@ io.on('connection', (socket) => {
 
     }
 
-    socket.on("shop_list", data=>{
-        if(!data){
+    socket.on("shop_list", data => {
+        if (!data) {
             let res_arr = []
-            db.each("SELECT * FROM shop_pages WHERE parent = '-1'", (err, res)=>{
+            db.each("SELECT * FROM shop_pages WHERE parent = '-1'", (err, res) => {
                 res_arr.push(res)
-                console.log("RES:", res)
-            }, ()=>{
+            }, () => {
                 socket.emit("shop_list", res_arr)
+            })
+        }
+        else {
+            //check if page have sub pages?
+            let res_arr = []
+            db.each("SELECT * FROM shop_pages WHERE parent = ?", data, (err, res) => {
+                if (res["COUNT(*)"]) {
+                    //have sub pages~ (need to pass new pages list)
+                }
+            }, () => {
+                //show all furni in this page
+                db.each("SELECT * FROM shop_items WHERE page_id = ?", data, (err, res) => {
+                    res_arr.push(res)
+                }, () => {
+                    socket.emit("shop_item_list", res_arr)
+                })
             })
         }
     })
 
     socket.on("place_furni", data => {
-        
+
         const rid = socket.my_room
         let mapx
         let furnis = []
-        db.run("UPDATE furniture SET x = ?, y = ? WHERE id = ?", data.x, data.y, data.id, ()=>{
-            db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res)=>{
+        db.run("UPDATE furniture SET x = ?, y = ? WHERE id = ?", data.x, data.y, data.id, () => {
+            db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res) => {
                 mapx = res.map
-            }, ()=>{
+            }, () => {
                 db.each("SELECT * FROM furniture WHERE room = ?", rid, (err1, res1) => {
                     furnis.push(res1)
-                }, ()=>{
-                    io.in(socket.my_room).emit("update_room", {map: mapx, furni: furnis})
+                }, () => {
+                    io.in(socket.my_room).emit("update_room", { map: mapx, furni: furnis })
                 })
             })
         })

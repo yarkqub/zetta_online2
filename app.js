@@ -141,6 +141,10 @@ io.on('connection', (socket) => {
 
     }
 
+    socket.on("buy", data=>{
+        console.log("Buy item from shop list: ", data)
+    })
+
     socket.on("shop_list", data => {
         if (!data) {
             let res_arr = []

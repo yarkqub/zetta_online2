@@ -319,6 +319,7 @@
         .shop_pages:nth-child(even) {
             background: #FFFFFF;
         }
+
         .shop_item {
             border: 1px solid black;
             width: 85px;
@@ -329,11 +330,18 @@
             font-size: 14px;
             cursor: pointer;
             border-radius: 4px;
+            position: relative;
         }
-        .shop_item:hover{
+
+        .shop_item:hover {
             background: #FFFFFF;
             padding: 5px;
             margin: 0px;
+        }
+
+        .shop_item_name {
+            position: absolute;
+            bottom: 0px;
         }
     </style>
 </head>
@@ -1458,6 +1466,15 @@
                         console.log("Hello world...", el.target.getAttribute("data"))
                         socket.emit("shop_list", el.target.getAttribute("data"))
                     }
+                    if (e == "shop_item") {
+                        const name = el.target.getAttribute("data-name")
+                        const price = el.target.getAttribute("data-price")
+                        const id = el.target.getAttribute("data")
+                        let buy = confirm(`Buy ${name} with ${price} 💰?`)
+                        if (buy) {
+                            socket.emit("buy", id)
+                        }
+                    }
                 })
             })
 
@@ -1695,7 +1712,7 @@
             socket.on("shop_list", data => {
                 shop_list.innerHTML = ""
                 data.forEach(dat => {
-                    shop_list.insertAdjacentHTML("beforeend", "<div class='shop_pages' data='" + dat.id + "'>" + dat.name + "</div>")
+                    shop_list.insertAdjacentHTML("beforeend", `<div class='shop_pages' data='${dat.id}'>${dat.name}</div>`)
                 })
             })
 
@@ -1704,8 +1721,8 @@
                 console.log("Furni for page~")
                 shop_item_list.innerHTML = ""
                 data.forEach(dat => {
-                    let item_kedai = items.find(item=>{ return item.id == dat.item_id})
-                    shop_item_list.insertAdjacentHTML("beforeend", "<div class='shop_item' data=''><img src='items/" + item_kedai.image + "'><br>" + dat.name + "<br>" + dat.price + " 💰</div>")
+                    let item_kedai = items.find(item => { return item.id == dat.item_id })
+                    shop_item_list.insertAdjacentHTML("beforeend", `<div class='shop_item' data='${dat.id}' data-name='${dat.name}' data-price='${dat.price}' style="background-image: url('items/${item_kedai.image}'); background-repeat: no-repeat; background-position:center top; background-size: 64px 64px;"><div class='shop_item_name'>${dat.name}<br>${dat.price} 💰</div></div>`)
                 })
             })
 

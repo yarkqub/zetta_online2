@@ -142,7 +142,21 @@ io.on('connection', (socket) => {
     }
 
     socket.on("buy", data=>{
-        console.log("Buy item from shop list: ", data)
+        const ply = players.find(plye => { return plye.socket == socket.id})
+        db.each("SELECT * FROM users WHERE id = ?", ply.id, (err, res)=>{
+            db.each("SELECT * FROM shop_items WHERE id = ?", data, (err1, res1)=>{
+                if(res.coins >= res1.price){
+                    let new_coins = res.coins - res1.price
+                    db.run("UPDATE users SET coins = ? WHERE id = ?", new_coins, ply.id)
+                    db.run("INSERT INTO furniture (item_id, owner, room) VALUES (?,?,?)", res1.item_id, ply.id, 0)
+                    socket.emit("update_coins", new_coins)
+                    
+                }
+                else{
+                    socket.emit("message", {type: "error_message", message: "Not enough 💰"})
+                }
+            })
+        })
     })
 
     socket.on("shop_list", data => {

@@ -159,6 +159,16 @@ io.on('connection', (socket) => {
         })
     })
 
+    socket.on("inventory_list", ()=>{
+        const ply = players.find(plye => { return plye.socket == socket.id})
+        furni_list = []
+        db.each("SELECT * FROM furniture WHERE owner = ? AND room = ?", ply.id, 0, (err, res)=>{
+            furni_list.push(res)
+        }, ()=>{
+            socket.emit("inventory_list", furni_list)
+        })
+    })
+
     socket.on("shop_list", data => {
         if (!data) {
             let res_arr = []
@@ -187,11 +197,10 @@ io.on('connection', (socket) => {
     })
 
     socket.on("place_furni", data => {
-
         const rid = socket.my_room
         let mapx
         let furnis = []
-        db.run("UPDATE furniture SET x = ?, y = ? WHERE id = ?", data.x, data.y, data.id, () => {
+        db.run("UPDATE furniture SET room = ?, x = ?, y = ? WHERE id = ?", rid, data.x, data.y, data.id, () => {
             db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res) => {
                 mapx = res.map
             }, () => {

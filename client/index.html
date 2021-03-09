@@ -343,6 +343,30 @@
             position: absolute;
             bottom: 0px;
         }
+
+        .inventory_item {
+            border: 1px solid black;
+            width: 85px;
+            height: 105px;
+            float: left;
+            margin: 5px;
+            background: #DDDDDD;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .inventory_item:hover {
+            background: #FFFFFF;
+            padding: 5px;
+            margin: 0px;
+        }
+
+        .inventory_count {
+            position: absolute;
+            bottom: 0px;
+        }
     </style>
 </head>
 
@@ -387,7 +411,7 @@
                 <button class="inventory_type" data="badge">Badges</button>
             </div>
         </div>
-        <div class="inventory_list"></div>
+        <div id="inventory_list"></div>
     </div>
 
     <div id="form">
@@ -836,33 +860,36 @@
                 furnis.forEach(furni => {
                     const j = furni.y
                     const i = furni.x
-                    const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
-                    const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
+                    if (j >= 0 && i >= 0) {
+                        const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                        const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
 
-                    const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
+                        const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
 
-                    const img_height = item_image[item_index].height
+                        const img_height = item_image[item_index].height
 
-                    const cx = x - tile_w
-                    const cy = y - item_image[item_index].height + tile_h
+                        const cx = x - tile_w
+                        const cy = y - item_image[item_index].height + tile_h
 
-                    const this_drawing = {
-                        img: item_image[item_index],
-                        cx: null,
-                        cy: null,
-                        cw: null,
-                        ch: null,
-                        px: cx,
-                        py: cy,
-                        pw: (tile_w * 2),
-                        ph: img_height,
-                        real_x: j,
-                        real_y: i
+                        const this_drawing = {
+                            img: item_image[item_index],
+                            cx: null,
+                            cy: null,
+                            cw: null,
+                            ch: null,
+                            px: cx,
+                            py: cy,
+                            pw: (tile_w * 2),
+                            ph: img_height,
+                            real_x: j,
+                            real_y: i
+                        }
+                        if (move_furni != furni.id) {
+                            //if furni on move, no need to show here
+                            draw_array.push(this_drawing)
+                        }
                     }
-                    if (move_furni != furni.id) {
-                        //if furni on move, no need to show here
-                        draw_array.push(this_drawing)
-                    }
+
                 })
 
                 //draw cursor
@@ -1022,33 +1049,35 @@
                 furnis.forEach(furni => {
                     const j = furni.y
                     const i = furni.x
-                    const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
-                    const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
+                    if (j >= 0 && i >= 0) {
+                        const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                        const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
 
-                    const found_item = items.find(item => { return item.id == furni.item_id })
-                    const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
-                    const furni_type = found_item.type
+                        const found_item = items.find(item => { return item.id == furni.item_id })
+                        const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
+                        const furni_type = found_item.type
 
-                    const img_height = item_image[item_index].height
-                    const img_width = item_image[item_index].width
+                        const img_height = item_image[item_index].height
+                        const img_width = item_image[item_index].width
 
-                    const cx = x - tile_w
-                    const cy = y - img_height + tile_h
-                    const cx1 = cx + tile_w
-                    const cy1 = cy
-                    const cx2 = cx1 + tile_w
-                    const cy2 = cy + tile_h
-                    const cx3 = cx2
-                    const cy3 = cy + img_height - tile_h
-                    const cx4 = cx1
-                    const cy4 = cy + img_height
-                    const cx5 = cx
-                    const cy5 = cy3
-                    const cx6 = cx
-                    const cy6 = cy2
-                    const item_id = Number(furni.item_id)
-                    if (furni.id != move_furni) {
-                        imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_id='" + furni.id + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+                        const cx = x - tile_w
+                        const cy = y - img_height + tile_h
+                        const cx1 = cx + tile_w
+                        const cy1 = cy
+                        const cx2 = cx1 + tile_w
+                        const cy2 = cy + tile_h
+                        const cx3 = cx2
+                        const cy3 = cy + img_height - tile_h
+                        const cx4 = cx1
+                        const cy4 = cy + img_height
+                        const cx5 = cx
+                        const cy5 = cy3
+                        const cx6 = cx
+                        const cy6 = cy2
+                        const item_id = Number(furni.item_id)
+                        if (furni.id != move_furni) {
+                            imgmap.insertAdjacentHTML('beforeend', "<area x='" + i + "' y='" + j + "' furni_id='" + furni.id + "' furni_type='" + furni_type + "' class='furniture' shape='polygon' coords='" + cx1 + "," + cy1 + "," + cx2 + "," + cy2 + "," + cx3 + "," + cy3 + "," + cx4 + "," + cy4 + "," + cx5 + "," + cy5 + "," + cx6 + "," + cy6 + "'>")
+                        }
                     }
                 })
 
@@ -1215,6 +1244,7 @@
             })
             document.querySelector("#open_inventory").addEventListener("click", () => {
                 document.querySelector("#inventory").style.display = "block"
+                socket.emit("inventory_list")
 
             })
 
@@ -1475,6 +1505,13 @@
                             socket.emit("buy", id)
                         }
                     }
+                    if (e == "inventory_item") {
+                        const this_furni_id = Number(el.target.getAttribute("data"))
+                        const this_item_id = Number(el.target.getAttribute("data-item"))
+                        furnis.push({ id: this_furni_id, item_id: this_item_id, owner: 0, room: 0, x: -1, y: -1 })
+                        document.querySelector("#inventory").style.display = "none"
+                        move_furni = this_furni_id
+                    }
                 })
             })
 
@@ -1726,9 +1763,30 @@
                 })
             })
 
-            socket.on("update_coins", data =>{
+            socket.on("update_coins", data => {
                 my_coins = data
             })
+
+            const inventory_list = document.querySelector("#inventory_list")
+            socket.on("inventory_list", data => {
+                inventory_list.innerHTML = ""
+                this_data = []
+                data.forEach(dat => {
+                    let item_kedai = items.find(item => { return item.id == dat.item_id })
+                    let check_this = this_data.some(this_dat => { return this_dat.item_id == dat.item_id })
+                    if (!check_this) {
+                        this_data.push({ id: dat.id, item_id: dat.item_id, count: 1, img: item_kedai.image })
+                    }
+                    else {
+                        let this_d = this_data.find(this_dat => { return this_dat.item_id == dat.item_id })
+                        this_d.count++
+                    }
+                })
+                this_data.forEach(this_dd => {
+                    inventory_list.insertAdjacentHTML("beforeend", `<div class='inventory_item' data='${this_dd.id}' data-item="${this_dd.item_id}" style="background-image: url('items/${this_dd.img}'); background-repeat: no-repeat; background-position:center top; background-size: 64px 64px;"><div class="inventory_count">${this_dd.count}</div></div>`)
+                })
+            })
+
 
 
 

@@ -454,7 +454,6 @@
         <button class="move">Move</button>
         <button class="pickup">Pick Up</button>
     </div>
-
     <script>
         (() => {
             const zetta_version = 0.22
@@ -470,6 +469,8 @@
             const bottom_right = document.querySelector(".bottom_right")
             const action_button_holder = document.querySelector("#action_button_holder")
             const move_furniture = document.querySelector(".move")
+
+            const window_inventory = document.querySelector("#inventory")
 
             const tile = {
                 width: tile_width / 2,
@@ -511,6 +512,9 @@
             let item_image = []
             let draw_array = []
             let draw_ontop = []
+
+            let from_inventory = false
+            let not_loading = false
 
             let debug
 
@@ -565,479 +569,488 @@
             const game = () => {
                 stats.begin()
                 //clear canvas
+
                 ctx.fillStyle = "#000000"
                 ctx.fillRect(0, 0, can.width, can.height)
-                //draw reset
-                draw_array = []
-                draw_ontop = []
+                if (not_loading) {
 
-                //drawing map
-                const map_j = room.map.length
-                for (let j = 0; j < map_j; j++) {
-                    const map_i = room.map[j].length
-                    for (let i = 0; i < map_i; i++) {
-                        if (room.map[j][i]) {
-                            const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
-                            const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
-                            //ys = y's shadow
-                            const ys = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h))
+                    //draw reset
+                    draw_array = []
+                    draw_ontop = []
 
-                            //tile shadow when height
-                            ctx.fillStyle = "#555";
-                            ctx.beginPath()
-                            ctx.moveTo(x, ys - tile_h)
-                            ctx.lineTo(x + tile_w, ys)
-                            ctx.lineTo(x, ys + tile_h)
-                            ctx.lineTo(x - tile_w, ys)
-                            ctx.closePath()
-                            ctx.fill()
+                    //drawing map
+                    const map_j = room.map.length
+                    for (let j = 0; j < map_j; j++) {
+                        const map_i = room.map[j].length
+                        for (let i = 0; i < map_i; i++) {
+                            if (room.map[j][i]) {
+                                const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                                const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
+                                //ys = y's shadow
+                                const ys = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h))
 
-                            //tile surface
-                            ctx.strokeStyle = "#8E8E5E"
-                            ctx.fillStyle = "#989865"
-                            ctx.beginPath()
-                            ctx.moveTo(x, y - tile_h)
-                            ctx.lineTo(x + tile_w, y)
-                            ctx.lineTo(x, y + tile_h)
-                            ctx.lineTo(x - tile_w, y)
-                            ctx.closePath()
-                            ctx.fill()
-                            ctx.stroke()
+                                //tile shadow when height
+                                ctx.fillStyle = "#555";
+                                ctx.beginPath()
+                                ctx.moveTo(x, ys - tile_h)
+                                ctx.lineTo(x + tile_w, ys)
+                                ctx.lineTo(x, ys + tile_h)
+                                ctx.lineTo(x - tile_w, ys)
+                                ctx.closePath()
+                                ctx.fill()
 
-                            //tile left
-                            ctx.fillStyle = "#838357"
-                            ctx.strokeStyle = "#7A7A51"
-                            ctx.beginPath()
-                            ctx.moveTo(x - tile_w, y)
-                            ctx.lineTo(x, y + tile_h)
-                            ctx.lineTo(x, y + tile_h + (tile_h / 2))
-                            ctx.lineTo(x - tile_w, y + (tile_h / 2))
-                            ctx.closePath()
-                            ctx.fill()
-                            ctx.stroke()
+                                //tile surface
+                                ctx.strokeStyle = "#8E8E5E"
+                                ctx.fillStyle = "#989865"
+                                ctx.beginPath()
+                                ctx.moveTo(x, y - tile_h)
+                                ctx.lineTo(x + tile_w, y)
+                                ctx.lineTo(x, y + tile_h)
+                                ctx.lineTo(x - tile_w, y)
+                                ctx.closePath()
+                                ctx.fill()
+                                ctx.stroke()
 
-                            //tile right
-                            ctx.fillStyle = "#6F6F49"
-                            ctx.strokeStyle = "#676744"
-                            ctx.beginPath()
-                            ctx.moveTo(x, y + tile_h)
-                            ctx.lineTo(x + tile_w, y)
-                            ctx.lineTo(x + tile_w, y + (tile_h / 2))
-                            ctx.lineTo(x, y + tile_h + (tile_h / 2))
-                            ctx.closePath()
-                            ctx.fill()
-                            ctx.stroke()
+                                //tile left
+                                ctx.fillStyle = "#838357"
+                                ctx.strokeStyle = "#7A7A51"
+                                ctx.beginPath()
+                                ctx.moveTo(x - tile_w, y)
+                                ctx.lineTo(x, y + tile_h)
+                                ctx.lineTo(x, y + tile_h + (tile_h / 2))
+                                ctx.lineTo(x - tile_w, y + (tile_h / 2))
+                                ctx.closePath()
+                                ctx.fill()
+                                ctx.stroke()
+
+                                //tile right
+                                ctx.fillStyle = "#6F6F49"
+                                ctx.strokeStyle = "#676744"
+                                ctx.beginPath()
+                                ctx.moveTo(x, y + tile_h)
+                                ctx.lineTo(x + tile_w, y)
+                                ctx.lineTo(x + tile_w, y + (tile_h / 2))
+                                ctx.lineTo(x, y + tile_h + (tile_h / 2))
+                                ctx.closePath()
+                                ctx.fill()
+                                ctx.stroke()
+                            }
                         }
                     }
-                }
 
-                //move player
-                const now = Date.now()
-                const then = fps_time + (1000 / 15) //setfps
-                if (now >= then) {
-                    fps_time = now
-                    //animate the walking array
-                    walking.forEach((walk, index) => {
-                        players.filter(player => {
-                            if (walk.id == player.id) {
-                                if (walk.step.length) {
-                                    const target_x = walk.step[0].y
-                                    const target_y = walk.step[0].x
-                                    const player_x = player.x
-                                    const player_y = player.y
-                                    const player_s = player.step++
+                    //move player
+                    const now = Date.now()
+                    const then = fps_time + (1000 / 15) //setfps
+                    if (now >= then) {
+                        fps_time = now
+                        //animate the walking array
+                        walking.forEach((walk, index) => {
+                            players.filter(player => {
+                                if (walk.id == player.id) {
+                                    if (walk.step.length) {
+                                        const target_x = walk.step[0].y
+                                        const target_y = walk.step[0].x
+                                        const player_x = player.x
+                                        const player_y = player.y
+                                        const player_s = player.step++
 
-                                    if (player_y < target_y) {
-                                        player.y = player.y + 0.125
-                                    }
-                                    if (player_y > target_y) {
-                                        player.y = player.y - 0.125
-                                    }
-                                    if (player_x < target_x) {
-                                        player.x = player.x + 0.125
-                                    }
-                                    if (player_x > target_x) {
-                                        player.x = player.x - 0.125
-                                    }
-
-                                    if (target_x == player_x && target_y > player_y) {
-                                        player.r = 10
-                                    }
-                                    if (target_x < player_x && target_y > player_y) {
-                                        player.r = 11
-                                    }
-                                    if (target_x < player_x && target_y == player_y) {
-                                        player.r = 12
-                                    }
-                                    if (target_x < player_x && target_y < player_y) {
-                                        player.r = 13
-                                    }
-                                    if (target_x == player_x && target_y < player_y) {
-                                        player.r = 14
-                                    }
-                                    if (target_x > player_x && target_y < player_y) {
-                                        player.r = 15
-                                    }
-                                    if (target_x > player_x && target_y == player_y) {
-                                        player.r = 16
-                                    }
-                                    if (target_x > player_x && target_y > player_y) {
-                                        player.r = 17
-                                    }
-
-                                    if (player_s >= 7) {
-                                        //set player x and y location to the location it should be
-                                        player.x = target_x
-                                        player.y = target_y
-                                        if (player.r >= 9) {
-                                            player.r -= 10
+                                        if (player_y < target_y) {
+                                            player.y = player.y + 0.125
                                         }
-                                        player.step = 1
-                                        walk.step.shift()//remove step already done animation
+                                        if (player_y > target_y) {
+                                            player.y = player.y - 0.125
+                                        }
+                                        if (player_x < target_x) {
+                                            player.x = player.x + 0.125
+                                        }
+                                        if (player_x > target_x) {
+                                            player.x = player.x - 0.125
+                                        }
+
+                                        if (target_x == player_x && target_y > player_y) {
+                                            player.r = 10
+                                        }
+                                        if (target_x < player_x && target_y > player_y) {
+                                            player.r = 11
+                                        }
+                                        if (target_x < player_x && target_y == player_y) {
+                                            player.r = 12
+                                        }
+                                        if (target_x < player_x && target_y < player_y) {
+                                            player.r = 13
+                                        }
+                                        if (target_x == player_x && target_y < player_y) {
+                                            player.r = 14
+                                        }
+                                        if (target_x > player_x && target_y < player_y) {
+                                            player.r = 15
+                                        }
+                                        if (target_x > player_x && target_y == player_y) {
+                                            player.r = 16
+                                        }
+                                        if (target_x > player_x && target_y > player_y) {
+                                            player.r = 17
+                                        }
+
+                                        if (player_s >= 7) {
+                                            //set player x and y location to the location it should be
+                                            player.x = target_x
+                                            player.y = target_y
+                                            if (player.r >= 9) {
+                                                player.r -= 10
+                                            }
+                                            player.step = 1
+                                            walk.step.shift()//remove step already done animation
+                                            socket.emit("movement", { id: player.id, x: player.x, y: player.y, r: player.r })
+                                        }
+                                    }
+                                    else {
+                                        //regulate balik location x,y player
+                                        player.x = Math.round(player.x)
+                                        player.y = Math.round(player.y)
+                                        //kalau takde movement lagi untuk player ni
+                                        walking.splice(index, 1)
+                                        player.step = 0
                                         socket.emit("movement", { id: player.id, x: player.x, y: player.y, r: player.r })
                                     }
                                 }
-                                else {
-                                    //regulate balik location x,y player
-                                    player.x = Math.round(player.x)
-                                    player.y = Math.round(player.y)
-                                    //kalau takde movement lagi untuk player ni
-                                    walking.splice(index, 1)
-                                    player.step = 0
-                                    socket.emit("movement", { id: player.id, x: player.x, y: player.y, r: player.r })
-                                }
-                            }
+                            })
                         })
-                    })
-                }
-
-                //players
-                players.forEach(player => {
-                    const player_x = player.x
-                    const player_y = player.y
-                    const char_w = character.width
-                    const char_h = character.height
-                    const pla_x = display_x + (player_x * (tile_w * 2) - (player_x * tile_w) - (player_y * tile_w))
-                    const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2)))
-
-                    const ontop = {
-                        typ: "username",
-                        txt: player.username,
-                        x: pla_x,
-                        y: pla_y - char_h + tile_h
-                    }
-                    draw_ontop.push(ontop)
-
-                    let cx = char_w * 6
-                    let cy = char_h * 2
-
-                    //animation fix?
-                    let walk_animation = player.step
-                    if (walk_animation >= 5) {
-                        walk_animation = walk_animation - 4
                     }
 
-                    if (player.r == 0) {
-                        cx = char_w * 0
-                        cy = char_h * 0
-
-                    }
-                    if (player.r == 1) {
-                        cx = char_w * 5
-                        cy = char_h * 0
-                    }
-                    if (player.r == 2) {
-                        cx = char_w * 10
-                        cy = char_h * 0
-                    }
-                    if (player.r == 3) {
-                        cx = char_w * 0
-                        cy = char_h * 2
-                    }
-                    if (player.r == 4) {
-                        cx = char_w * 10
-                        cy = char_h * 1
-                    }
-                    if (player.r == 5) {
-                        cx = char_w * 5
-                        cy = char_h * 1
-                    }
-                    if (player.r == 6) {
-                        cx = char_w * 0
-                        cy = char_h * 1
-                    }
-                    if (player.r == 7) {
-                        cx = char_w * 5
-                        cy = char_h * 2
-                    }
-
-                    if (player.r == 10) {
-                        cx = char_w * (walk_animation + 0) //frame should be 1 - 4
-                        cy = char_h * 0
-                    }
-                    if (player.r == 11) {
-                        cx = char_w * (walk_animation + 5)
-                        cy = char_h * 0
-                    }
-                    if (player.r == 12) {
-                        cx = char_w * (walk_animation + 10)
-                        cy = char_h * 0
-                    }
-                    if (player.r == 13) {
-                        cx = char_w * (walk_animation + 0)
-                        cy = char_h * 2
-                    }
-                    if (player.r == 14) {
-                        cx = char_w * (walk_animation + 10)
-                        cy = char_h * 1
-                    }
-                    if (player.r == 15) {
-                        cx = char_w * (walk_animation + 5)
-                        cy = char_h * 1
-                    }
-
-                    if (player.r == 16) {
-                        cx = char_w * (walk_animation + 0)
-                        cy = char_h * 1
-                    }
-                    if (player.r == 17) {
-                        cx = char_w * (walk_animation + 5)
-                        cy = char_h * 2
-                    }
-
-                    if (player.state == "sit") {
-                        if (player.r <= 8) {
-                            cy = char_h * 2
-                            if (player.r == 0 || player.r == 1) {
-                                cx = char_w * 10
-                            }
-                            if (player.r == 2 || player.r == 3) {
-                                cx = char_w * 11
-                            }
-                            if (player.r == 4 || player.r == 5) {
-                                cx = char_w * 12
-                            }
-                            if (player.r == 6 || player.r == 7) {
-                                cx = char_w * 13
-                            }
-                        }
-                        else if (player.r > 8) {
-                            player.state = "stand"
-                        }
-                    }
-
-                    const this_drawing = {
-                        img: char_image,
-                        cx: cx,
-                        cy: cy,
-                        cw: char_w,
-                        ch: char_h,
-                        px: pla_x - tile_w,
-                        py: pla_y - char_h + (tile_h / 2),
-                        pw: tile_w * 2,
-                        ph: char_h,
-                        real_x: player_y,
-                        real_y: player_x
-                    }
-                    draw_array.push(this_drawing)
-
-                    //typing status
-                    if (player.typing) {
-                        const typ_x = pla_x + tile_w - 5
-                        const typ_y = pla_y - (tile_h * 4) - 10
-
+                    //players
+                    players.forEach(player => {
+                        const player_x = player.x
+                        const player_y = player.y
+                        const char_w = character.width
+                        const char_h = character.height
+                        const pla_x = display_x + (player_x * (tile_w * 2) - (player_x * tile_w) - (player_y * tile_w))
+                        const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2)))
 
                         const ontop = {
-                            typ: "typing",
-                            x: typ_x,
-                            y: typ_y
+                            typ: "username",
+                            txt: player.username,
+                            x: pla_x,
+                            y: pla_y - char_h + tile_h
                         }
                         draw_ontop.push(ontop)
+
+                        let cx = char_w * 6
+                        let cy = char_h * 2
+
+                        //animation fix?
+                        let walk_animation = player.step
+                        if (walk_animation >= 5) {
+                            walk_animation = walk_animation - 4
+                        }
+
+                        if (player.r == 0) {
+                            cx = char_w * 0
+                            cy = char_h * 0
+
+                        }
+                        if (player.r == 1) {
+                            cx = char_w * 5
+                            cy = char_h * 0
+                        }
+                        if (player.r == 2) {
+                            cx = char_w * 10
+                            cy = char_h * 0
+                        }
+                        if (player.r == 3) {
+                            cx = char_w * 0
+                            cy = char_h * 2
+                        }
+                        if (player.r == 4) {
+                            cx = char_w * 10
+                            cy = char_h * 1
+                        }
+                        if (player.r == 5) {
+                            cx = char_w * 5
+                            cy = char_h * 1
+                        }
+                        if (player.r == 6) {
+                            cx = char_w * 0
+                            cy = char_h * 1
+                        }
+                        if (player.r == 7) {
+                            cx = char_w * 5
+                            cy = char_h * 2
+                        }
+
+                        if (player.r == 10) {
+                            cx = char_w * (walk_animation + 0) //frame should be 1 - 4
+                            cy = char_h * 0
+                        }
+                        if (player.r == 11) {
+                            cx = char_w * (walk_animation + 5)
+                            cy = char_h * 0
+                        }
+                        if (player.r == 12) {
+                            cx = char_w * (walk_animation + 10)
+                            cy = char_h * 0
+                        }
+                        if (player.r == 13) {
+                            cx = char_w * (walk_animation + 0)
+                            cy = char_h * 2
+                        }
+                        if (player.r == 14) {
+                            cx = char_w * (walk_animation + 10)
+                            cy = char_h * 1
+                        }
+                        if (player.r == 15) {
+                            cx = char_w * (walk_animation + 5)
+                            cy = char_h * 1
+                        }
+
+                        if (player.r == 16) {
+                            cx = char_w * (walk_animation + 0)
+                            cy = char_h * 1
+                        }
+                        if (player.r == 17) {
+                            cx = char_w * (walk_animation + 5)
+                            cy = char_h * 2
+                        }
+
+                        if (player.state == "sit") {
+                            if (player.r <= 8) {
+                                cy = char_h * 2
+                                if (player.r == 0 || player.r == 1) {
+                                    cx = char_w * 10
+                                }
+                                if (player.r == 2 || player.r == 3) {
+                                    cx = char_w * 11
+                                }
+                                if (player.r == 4 || player.r == 5) {
+                                    cx = char_w * 12
+                                }
+                                if (player.r == 6 || player.r == 7) {
+                                    cx = char_w * 13
+                                }
+                            }
+                            else if (player.r > 8) {
+                                player.state = "stand"
+                            }
+                        }
+
+                        const this_drawing = {
+                            img: char_image,
+                            cx: cx,
+                            cy: cy,
+                            cw: char_w,
+                            ch: char_h,
+                            px: pla_x - tile_w,
+                            py: pla_y - char_h + (tile_h / 2),
+                            pw: tile_w * 2,
+                            ph: char_h,
+                            real_x: player_y,
+                            real_y: player_x
+                        }
+                        draw_array.push(this_drawing)
+
+                        //typing status
+                        if (player.typing) {
+                            const typ_x = pla_x + tile_w - 5
+                            const typ_y = pla_y - (tile_h * 4) - 10
+
+
+                            const ontop = {
+                                typ: "typing",
+                                x: typ_x,
+                                y: typ_y
+                            }
+                            draw_ontop.push(ontop)
+                        }
+                    })
+
+                    //draw furniture
+                    furnis.forEach(furni => {
+                        const j = furni.y
+                        const i = furni.x
+                        if (j >= 0 && i >= 0) {
+                            const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
+                            const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
+
+                            const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
+
+                            const img_height = item_image[item_index].height
+
+                            const cx = x - tile_w
+                            const cy = y - item_image[item_index].height + tile_h
+
+                            const this_drawing = {
+                                img: item_image[item_index],
+                                cx: null,
+                                cy: null,
+                                cw: null,
+                                ch: null,
+                                px: cx,
+                                py: cy,
+                                pw: (tile_w * 2),
+                                ph: img_height,
+                                real_x: j,
+                                real_y: i
+                            }
+                            if (move_furni != furni.id) {
+                                //if furni on move, no need to show here
+                                draw_array.push(this_drawing)
+                            }
+                        }
+
+                    })
+
+                    //draw cursor
+                    ctx.strokeStyle = "#FFFFFF"
+                    ctx.lineWidth = 2
+                    if (cursor_x >= 0 && cursor_y >= 0) {
+                        const cur_x = display_x + (cursor_x * (tile_w * 2) - (cursor_x * tile_w) - (cursor_y * tile_w))
+                        const cur_y = display_y + (cursor_y * (tile_h * 2) - (cursor_y * tile_h) + (cursor_x * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
+                        ctx.beginPath()
+                        ctx.moveTo(cur_x, cur_y - tile_h)
+                        ctx.lineTo(cur_x + tile_w, cur_y)
+                        ctx.lineTo(cur_x, cur_y + tile_h)
+                        ctx.lineTo(cur_x - tile_w, cur_y)
+                        ctx.closePath()
+                        ctx.stroke()
                     }
-                })
 
-                //draw furniture
-                furnis.forEach(furni => {
-                    const j = furni.y
-                    const i = furni.x
-                    if (j >= 0 && i >= 0) {
+                    draw_array.sort((a, b) => { return a.real_y - b.real_y })
+
+                    let last_axist
+                    draw_array.forEach(lukis => {
+                        if (last_axist != lukis.real_y) {
+                            last_axist = lukis.real_y
+                            let draw = draw_array.filter(this_draw => { return this_draw.real_y == lukis.real_y })
+                            draw.sort((a, b) => { return a.real_x - b.real_x })
+                            draw.forEach(lukisan => {
+                                if (lukisan.cx != null) {
+                                    //this is user....
+                                    ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                                }
+                                else {
+                                    //this is furni
+                                    ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.img.height)
+                                    //draw character atas tiles / furni~
+                                    draw_array.forEach(pp => {
+                                        if (pp.real_x == lukisan.real_x && pp.real_y == lukisan.real_y && pp.cx != null) {
+                                            ctx.drawImage(pp.img, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
+                                        }
+                                    })
+
+
+                                }
+                            })
+
+                        }
+                    })
+
+                    //draw everything on top
+                    draw_ontop.forEach(ontop => {
+                        if (ontop.typ == "username") {
+                            ctx.textAlign = "center";
+                            ctx.fillStyle = "#FFF"
+                            ctx.fillText(ontop.txt, ontop.x, ontop.y)
+                        }
+                        if (ontop.typ == "typing") {
+                            const typ_x = ontop.x
+                            const typ_y = ontop.y
+                            ctx.strokeStyle = "#000"
+                            ctx.fillStyle = "#FFF"
+                            ctx.beginPath()
+                            ctx.ellipse(typ_x, typ_y, 11, 7, 0, 0, 2 * Math.PI)
+                            ctx.closePath()
+                            ctx.stroke()
+                            ctx.fill()
+                            ctx.beginPath()
+                            ctx.moveTo(typ_x - 6, typ_y + 7)
+                            ctx.lineTo(typ_x - 1, typ_y + 7)
+                            ctx.lineTo(typ_x - 6, typ_y + 11)
+                            ctx.closePath()
+                            ctx.stroke()
+                            ctx.fill()
+                            ctx.strokeStyle = "#FFF"
+                            ctx.beginPath()
+                            ctx.moveTo(typ_x - 5.5, typ_y + 6.5)
+                            ctx.lineTo(typ_x - 1.5, typ_y + 6.5)
+                            ctx.closePath()
+                            ctx.stroke()
+                            ctx.textAlign = "center"
+                            ctx.fillStyle = "#000"
+                            ctx.fillText("...", typ_x, typ_y)
+                        }
+                    })
+
+                    // draw move furni shadow
+                    if (move_furni) {
+                        const i = cursor_x
+                        const j = cursor_y
                         const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
-                        const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[j][i] * (tile_h / 2)))
+                        const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
 
-                        const item_index = items.map(item => { return item.id }).indexOf(furni.item_id)
-
-                        const img_height = item_image[item_index].height
+                        const furni_info = furnis.find(e => e.id == move_furni)
+                        const item_index = items.map(item => { return item.id }).indexOf(furni_info.item_id)
 
                         const cx = x - tile_w
                         const cy = y - item_image[item_index].height + tile_h
-
-                        const this_drawing = {
-                            img: item_image[item_index],
-                            cx: null,
-                            cy: null,
-                            cw: null,
-                            ch: null,
-                            px: cx,
-                            py: cy,
-                            pw: (tile_w * 2),
-                            ph: img_height,
-                            real_x: j,
-                            real_y: i
-                        }
-                        if (move_furni != furni.id) {
-                            //if furni on move, no need to show here
-                            draw_array.push(this_drawing)
-                        }
+                        ctx.save()
+                        ctx.globalAlpha = 0.5;
+                        ctx.drawImage(item_image[item_index], cx, cy)
+                        ctx.restore()
                     }
 
-                })
+                    //chat for players / bubble chat
+                    chats.forEach((chat, i) => {
+                        ctx.font = 'bold 15px Arial'
+                        const chat_username = chat.username + ": "
+                        const chat_username_length = ctx.measureText(chat_username).width + 5
+                        ctx.font = 'normal 15px Arial'
+                        const chat_message = chat.message
+                        const chat_message_length = ctx.measureText(chat_message).width + 5
+                        const chat_len2 = chat_username_length + chat_message_length
 
-                //draw cursor
-                ctx.strokeStyle = "#FFFFFF"
-                ctx.lineWidth = 2
-                if (cursor_x >= 0 && cursor_y >= 0) {
-                    const cur_x = display_x + (cursor_x * (tile_w * 2) - (cursor_x * tile_w) - (cursor_y * tile_w))
-                    const cur_y = display_y + (cursor_y * (tile_h * 2) - (cursor_y * tile_h) + (cursor_x * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
-                    ctx.beginPath()
-                    ctx.moveTo(cur_x, cur_y - tile_h)
-                    ctx.lineTo(cur_x + tile_w, cur_y)
-                    ctx.lineTo(cur_x, cur_y + tile_h)
-                    ctx.lineTo(cur_x - tile_w, cur_y)
-                    ctx.closePath()
-                    ctx.stroke()
-                }
-
-                draw_array.sort((a, b) => { return a.real_y - b.real_y })
-
-                let last_axist
-                draw_array.forEach(lukis => {
-                    if (last_axist != lukis.real_y) {
-                        last_axist = lukis.real_y
-                        let draw = draw_array.filter(this_draw => { return this_draw.real_y == lukis.real_y })
-                        draw.sort((a, b) => { return a.real_x - b.real_x })
-                        draw.forEach(lukisan => {
-                            if (lukisan.cx != null) {
-                                //this is user....
-                                ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
-                            }
-                            else {
-                                //this is furni
-                                ctx.drawImage(lukisan.img, lukisan.px, lukisan.py, lukisan.pw, lukisan.img.height)
-                                //draw character atas tiles / furni~
-                                draw_array.forEach(pp => {
-                                    if (pp.real_x == lukisan.real_x && pp.real_y == lukisan.real_y && pp.cx != null) {
-                                        ctx.drawImage(pp.img, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
-                                    }
-                                })
-
-
-                            }
-                        })
-
-                    }
-                })
-
-                //draw everything on top
-                draw_ontop.forEach(ontop => {
-                    if (ontop.typ == "username") {
+                        const pla_x = display_x + (chat.x * (tile_w * 2) - (chat.x * tile_w) - (chat.y * tile_w))
                         ctx.textAlign = "center";
                         ctx.fillStyle = "#FFF"
-                        ctx.fillText(ontop.txt, ontop.x, ontop.y)
-                    }
-                    if (ontop.typ == "typing") {
-                        const typ_x = ontop.x
-                        const typ_y = ontop.y
-                        ctx.strokeStyle = "#000"
-                        ctx.fillStyle = "#FFF"
+
                         ctx.beginPath()
-                        ctx.ellipse(typ_x, typ_y, 11, 7, 0, 0, 2 * Math.PI)
+                        ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) - 150 + 5, 5, Math.PI + (Math.PI / 2), Math.PI, true)
+                        ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) - 130 - 5, 5, Math.PI, Math.PI / 2, true)
+                        ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 25) - 130 - 5, 5, Math.PI / 2, 0, true)
+                        ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 25) - 150 + 5, 5, 0, Math.PI + (Math.PI / 2), true)
                         ctx.closePath()
+                        ctx.strokeStyle = "#555"
                         ctx.stroke()
                         ctx.fill()
-                        ctx.beginPath()
-                        ctx.moveTo(typ_x - 6, typ_y + 7)
-                        ctx.lineTo(typ_x - 1, typ_y + 7)
-                        ctx.lineTo(typ_x - 6, typ_y + 11)
-                        ctx.closePath()
-                        ctx.stroke()
-                        ctx.fill()
-                        ctx.strokeStyle = "#FFF"
-                        ctx.beginPath()
-                        ctx.moveTo(typ_x - 5.5, typ_y + 6.5)
-                        ctx.lineTo(typ_x - 1.5, typ_y + 6.5)
-                        ctx.closePath()
-                        ctx.stroke()
-                        ctx.textAlign = "center"
                         ctx.fillStyle = "#000"
-                        ctx.fillText("...", typ_x, typ_y)
-                    }
-                })
 
-                // draw move furni shadow
-                if (move_furni) {
-                    const i = cursor_x
-                    const j = cursor_y
-                    const x = display_x + (i * (tile_w * 2) - (i * tile_w) - (j * tile_w))
-                    const y = display_y + (j * (tile_h * 2) - (j * tile_h) + (i * tile_h) - (room.map[cursor_y][cursor_x] * (tile_h / 2)))
+                        ctx.textAlign = "start";
+                        ctx.font = 'bold 15px Arial'
+                        ctx.fillText(chat_username, pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) + 15 - 150)
+                        ctx.font = "normal 15px Arial"
+                        ctx.fillText(chat_message, pla_x - (chat_len2 / 2) + chat_username_length, (can.height / 2) - (i * 25) + 15 - 150)
+                    })
 
-                    const furni_info = furnis.find(e => e.id == move_furni)
-                    const item_index = items.map(item => { return item.id }).indexOf(furni_info.item_id)
 
-                    const cx = x - tile_w
-                    const cy = y - item_image[item_index].height + tile_h
-                    ctx.save()
-                    ctx.globalAlpha = 0.5;
-                    ctx.drawImage(item_image[item_index], cx, cy)
-                    ctx.restore()
-                }
-
-                //chat for players / bubble chat
-                chats.forEach((chat, i) => {
-                    ctx.font = 'bold 15px Arial'
-                    const chat_username = chat.username + ": "
-                    const chat_username_length = ctx.measureText(chat_username).width + 5
-                    ctx.font = 'normal 15px Arial'
-                    const chat_message = chat.message
-                    const chat_message_length = ctx.measureText(chat_message).width + 5
-                    const chat_len2 = chat_username_length + chat_message_length
-
-                    const pla_x = display_x + (chat.x * (tile_w * 2) - (chat.x * tile_w) - (chat.y * tile_w))
-                    ctx.textAlign = "center";
-                    ctx.fillStyle = "#FFF"
-
-                    ctx.beginPath()
-                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) - 150 + 5, 5, Math.PI + (Math.PI / 2), Math.PI, true)
-                    ctx.arc(pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) - 130 - 5, 5, Math.PI, Math.PI / 2, true)
-                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 25) - 130 - 5, 5, Math.PI / 2, 0, true)
-                    ctx.arc(pla_x - (chat_len2 / 2) + chat_len2 - 5, (can.height / 2) - (i * 25) - 150 + 5, 5, 0, Math.PI + (Math.PI / 2), true)
-                    ctx.closePath()
-                    ctx.strokeStyle = "#555"
-                    ctx.stroke()
-                    ctx.fill()
-                    ctx.fillStyle = "#000"
-
-                    ctx.textAlign = "start";
-                    ctx.font = 'bold 15px Arial'
-                    ctx.fillText(chat_username, pla_x - (chat_len2 / 2) + 5, (can.height / 2) - (i * 25) + 15 - 150)
+                    //name and coins for top right display
                     ctx.font = "normal 15px Arial"
-                    ctx.fillText(chat_message, pla_x - (chat_len2 / 2) + chat_username_length, (can.height / 2) - (i * 25) + 15 - 150)
-                })
+                    ctx.textAlign = "end";
+                    ctx.fillStyle = "#FFFFFF"
+                    ctx.fillText(my_username, can.width - 20, 40)
+                    ctx.fillStyle = "#FFD700"
+                    ctx.fillText("💰: " + my_coins, can.width - 20, 60)
 
-
-                //name and coins for top right display
-                ctx.font = "normal 15px Arial"
-                ctx.textAlign = "end";
-                ctx.fillStyle = "#FFFFFF"
-                ctx.fillText(my_username, can.width - 20, 40)
-                ctx.fillStyle = "#FFD700"
-                ctx.fillText("💰: " + my_coins, can.width - 20, 60)
-
-                ctx.fillStyle = "#FAA"
-                ctx.font = "normal 15px Arial   "
-                ctx.textAlign = "start";
-                ctx.fillText("Zetta Online [v" + zetta_version + "]", 100, 20)
-                ctx.fillText("Room: " + room.name, 100, 35)
-
+                    ctx.fillStyle = "#FAA"
+                    ctx.font = "normal 15px Arial   "
+                    ctx.textAlign = "start";
+                    ctx.fillText("Zetta Online [v" + zetta_version + "]", 100, 20)
+                    ctx.fillText("Room: " + room.name, 100, 35)
+                }
+                else {
+                    ctx.font = "bold 15px Arial"
+                    ctx.textAlign = "center"
+                    ctx.fillStyle = "#0F0"
+                    ctx.fillText("Loading room...", can.width / 2, can.height / 2)
+                }
 
                 stats.end()
                 requestAnimationFrame(game);
@@ -1228,7 +1241,7 @@
                 document.querySelector("#room_nav").style.display = "none"
             })
             document.querySelector("#close_inventory").addEventListener("click", () => {
-                document.querySelector("#inventory").style.display = "none"
+                window_inventory.style.display = "none"
             })
             document.querySelector("#close_shop").addEventListener("click", () => {
                 document.querySelector("#shop").style.display = "none"
@@ -1243,7 +1256,7 @@
                 socket.emit("shop_list")
             })
             document.querySelector("#open_inventory").addEventListener("click", () => {
-                document.querySelector("#inventory").style.display = "block"
+                window_inventory.style.display = "block"
                 socket.emit("inventory_list")
 
             })
@@ -1327,6 +1340,11 @@
                 selected_furni = 0
                 mousedown = false
                 update_map()
+                if (from_inventory) {
+                    from_inventory = false
+                    socket.emit("inventory_list")
+                    window_inventory.style.display = "block"
+                }
             });
             touch_screen.addEventListener("touchend", () => {
                 mousedown = false
@@ -1414,6 +1432,13 @@
                         document.querySelector("#bottom_right_image").src = "items/" + item_info.image
                     }
                 }
+
+                if (from_inventory) {
+                    from_inventory = false
+                    socket.emit("inventory_list")
+                    window_inventory.style.display = "block"
+                }
+
                 mousedown = false
                 update_map()
             });
@@ -1424,6 +1449,11 @@
                         console.log("Is click");
                     } else {
                         console.log("IS drag");
+                    }
+                    if (from_inventory) {
+                        from_inventory = false
+                        socket.emit("inventory_list")
+                        window_inventory.style.display = "block"
                     }
                     mousedown = false;
                     update_map();
@@ -1487,6 +1517,7 @@
             document.addEventListener("click", el => {
                 el.target.classList.forEach(e => {
                     if (e == "goto_room") {
+                        not_loading = false
                         console.log("goto_room? ", el.target.getAttribute("data"))
                         socket.emit("goto", { room: el.target.getAttribute("data") })
                         document.querySelector("#room_nav").style.display = "none"
@@ -1506,10 +1537,11 @@
                         }
                     }
                     if (e == "inventory_item") {
+                        from_inventory = true
                         const this_furni_id = Number(el.target.getAttribute("data"))
                         const this_item_id = Number(el.target.getAttribute("data-item"))
                         furnis.push({ id: this_furni_id, item_id: this_item_id, owner: 0, room: 0, x: -1, y: -1 })
-                        document.querySelector("#inventory").style.display = "none"
+                        window_inventory.style.display = "none"
                         move_furni = this_furni_id
                     }
                 })
@@ -1656,6 +1688,7 @@
 
             socket.on("furni", data => {
                 setTimeout(() => {
+                    
                     furnis = data
                     console.log("Furniture:", furnis)
                     //update furni on maping....
@@ -1677,6 +1710,8 @@
                         }
                     })
                     graph = new Graph(mapping, { diagonal: true })
+
+                    not_loading = true
 
                 }, 500)
             })

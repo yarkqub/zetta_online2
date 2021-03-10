@@ -135,8 +135,7 @@ io.on('connection', (socket) => {
         db.each("SELECT * FROM furniture WHERE room = ?", rid, (err, res) => {
             furnis.push(res);
         }, () => {
-            //io.in(rid).emit("furni", furnis)
-            io.emit("furni", furnis)
+            io.in(rid).emit("furni", furnis)
         })
 
     }

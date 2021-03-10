@@ -1520,6 +1520,9 @@
                         not_loading = false
                         move_furni = 0
                         selected_furni = 0
+                        bottom_right.style.display = "none"
+                        action_button_holder.style.display = "none"
+
                         console.log("goto_room? ", el.target.getAttribute("data"))
                         socket.emit("goto", { room: el.target.getAttribute("data") })
                         document.querySelector("#room_nav").style.display = "none"

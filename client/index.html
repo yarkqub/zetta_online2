@@ -469,6 +469,7 @@
             const bottom_right = document.querySelector(".bottom_right")
             const action_button_holder = document.querySelector("#action_button_holder")
             const move_furniture = document.querySelector(".move")
+            const pickup_furniture = document.querySelector(".pickup")
 
             const window_inventory = document.querySelector("#inventory")
 
@@ -1229,6 +1230,11 @@
 
             move_furniture.addEventListener("click", () => {
                 move_furni = selected_furni
+                update_map()
+            })
+
+            pickup_furniture.addEventListener("click", () => {
+                socket.emit("pickup", selected_furni)
                 update_map()
             })
 

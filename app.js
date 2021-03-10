@@ -140,30 +140,48 @@ io.on('connection', (socket) => {
 
     }
 
-    socket.on("buy", data=>{
-        const ply = players.find(plye => { return plye.socket == socket.id})
-        db.each("SELECT * FROM users WHERE id = ?", ply.id, (err, res)=>{
-            db.each("SELECT * FROM shop_items WHERE id = ?", data, (err1, res1)=>{
-                if(res.coins >= res1.price){
+    socket.on("pickup", data => {
+        const rid = socket.my_room
+        let mapx
+        let furnis = []
+        db.run("UPDATE furniture SET room = ? WHERE id = ?", 0, data, () => {
+            db.each("SELECT * FROM rooms WHERE id = ?", rid, (err, res) => {
+                mapx = res.map
+            }, () => {
+                db.each("SELECT * FROM furniture WHERE room = ?", rid, (err1, res1) => {
+                    furnis.push(res1)
+                }, () => {
+                    io.in(socket.my_room).emit("update_room", { map: mapx, furni: furnis })
+                })
+            })
+        })
+
+    })
+
+    socket.on("buy", data => {
+        const ply = players.find(plye => { return plye.socket == socket.id })
+        db.each("SELECT * FROM users WHERE id = ?", ply.id, (err, res) => {
+            db.each("SELECT * FROM shop_items WHERE id = ?", data, (err1, res1) => {
+                if (res.coins >= res1.price) {
                     let new_coins = res.coins - res1.price
                     db.run("UPDATE users SET coins = ? WHERE id = ?", new_coins, ply.id)
                     db.run("INSERT INTO furniture (item_id, owner, room) VALUES (?,?,?)", res1.item_id, ply.id, 0)
                     socket.emit("update_coins", new_coins)
-                    
+
                 }
-                else{
-                    socket.emit("message", {type: "error_message", message: "Not enough 💰"})
+                else {
+                    socket.emit("message", { type: "error_message", message: "Not enough 💰" })
                 }
             })
         })
     })
 
-    socket.on("inventory_list", ()=>{
-        const ply = players.find(plye => { return plye.socket == socket.id})
+    socket.on("inventory_list", () => {
+        const ply = players.find(plye => { return plye.socket == socket.id })
         furni_list = []
-        db.each("SELECT * FROM furniture WHERE owner = ? AND room = ?", ply.id, 0, (err, res)=>{
+        db.each("SELECT * FROM furniture WHERE owner = ? AND room = ?", ply.id, 0, (err, res) => {
             furni_list.push(res)
-        }, ()=>{
+        }, () => {
             socket.emit("inventory_list", furni_list)
         })
     })

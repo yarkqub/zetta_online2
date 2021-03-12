@@ -383,6 +383,7 @@
             </div>
         </div>
         <div class="room_list"></div>
+        <div class="create_room_div"><button id="create_room">Create Room</button></div>
     </div>
 
     <div id="shop" class="floating_window">
@@ -472,6 +473,7 @@
             const pickup_furniture = document.querySelector(".pickup")
 
             const window_inventory = document.querySelector("#inventory")
+            const create_room = document.querySelector("#create_room")
 
             const tile = {
                 width: tile_width / 2,
@@ -1452,7 +1454,16 @@
             document.addEventListener("touchend", e => {
                 if (e.target.className == "tile") {
                     if (is_click) {
-                        console.log("Is click");
+                        bottom_right.style.display = "none"
+                        action_button_holder.style.display = "none"
+                        if (move_furni) {
+                            socket.emit("place_furni", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y"), id: move_furni })
+                            move_furni = 0
+                            selected_furni = 0
+                        }
+                        else {
+                            socket.emit("move", { x: e.target.getAttribute("x"), y: e.target.getAttribute("y") })
+                        }
                     } else {
                         console.log("IS drag");
                     }
@@ -1520,6 +1531,13 @@
                 })
             })
 
+            create_room.addEventListener("click", () => {
+                let prom = window.prompt("Room name:", "My room")
+                if (prom) {
+                    socket.emit("create_room", prom)
+                }
+            })
+
             document.addEventListener("click", el => {
                 el.target.classList.forEach(e => {
                     if (e == "goto_room") {
@@ -1533,6 +1551,7 @@
                         socket.emit("goto", { room: el.target.getAttribute("data") })
                         document.querySelector("#room_nav").style.display = "none"
                         chats = []
+                        cursor_x, cursor_y = -1
                     }
                     if (e == "shop_pages") {
                         console.log("Hello world...", el.target.getAttribute("data"))
@@ -1569,6 +1588,9 @@
             socket.on("message", (data) => {
                 if (data.type == "error_message") {
                     alert("Error: " + data.message)
+                }
+                else if (data.type == "alert_box") {
+                    alert("MESSAGE:\n" + data.message)
                 }
                 else if (data.type == "succes_register") {
                     document.querySelector("#register").style.display = "none"

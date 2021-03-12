@@ -140,6 +140,11 @@ io.on('connection', (socket) => {
 
     }
 
+    socket.on("create_room", data => {
+        const ply = players.find(plye => { return plye.socket == socket.id })
+        db.run("INSERT INTO rooms (name, owner, map, door) VALUES (?, ?, '[[0, 0, 0, 0, 1, 0, 0, 0, 0],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1]]', '[4, 0]')", data, ply.id)
+    })
+
     socket.on("pickup", data => {
         const rid = socket.my_room
         let mapx
@@ -260,6 +265,9 @@ io.on('connection', (socket) => {
                 if (data.startsWith(":sit")) {
                     player.state = "sit"
                     io.to(player.room).emit("sit", { id: player.id })
+                }
+                if(data.startsWith(":cmd") || data.startsWith(":commands") || data.startsWith(":help")){
+                    socket.emit("message", { type: "message_box", message: ":sit - to sitdown\n:help/:cmd/:commands - This commands" })
                 }
                 else {
                     io.to(player.room).emit("chat", { username: player.username, message: data, x: player.x, y: player.y });

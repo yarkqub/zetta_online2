@@ -950,7 +950,17 @@
                     //draw everything on top
                     draw_ontop.forEach(ontop => {
                         if (ontop.typ == "username") {
-                            ctx.textAlign = "center";
+                            ctx.textAlign = "center"
+                            ctx.fillStyle = "#55555599"
+                            const name_length = ctx.measureText(ontop.txt).width
+                            ctx.fillRect(ontop.x - (name_length/2) - 20, ontop.y - 15, name_length + 25, 20)
+                            ctx.fillStyle = "#FFa500"
+                            ctx.beginPath()
+                            ctx.moveTo(ontop.x - (name_length/2) - 15, ontop.y)
+                            ctx.lineTo(ontop.x - (name_length/2) - 10, ontop.y - 10)
+                            ctx.lineTo(ontop.x - (name_length/2) - 5, ontop.y)
+                            ctx.closePath()
+                            ctx.fill()
                             ctx.fillStyle = "#FFF"
                             ctx.fillText(ontop.txt, ontop.x, ontop.y)
                         }

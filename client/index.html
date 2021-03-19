@@ -714,6 +714,7 @@
                                         //kalau takde movement lagi untuk player ni
                                         walking.splice(index, 1)
                                         player.step = 0
+                                        update_map()
                                         socket.emit("movement", { id: player.id, x: player.x, y: player.y, r: player.r })
                                     }
                                 }
@@ -953,12 +954,12 @@
                             ctx.textAlign = "center"
                             ctx.fillStyle = "#55555599"
                             const name_length = ctx.measureText(ontop.txt).width
-                            ctx.fillRect(ontop.x - (name_length/2) - 20, ontop.y - 15, name_length + 25, 20)
+                            ctx.fillRect(ontop.x - (name_length / 2) - 20, ontop.y - 15, name_length + 25, 20)
                             ctx.fillStyle = "#FFa500"
                             ctx.beginPath()
-                            ctx.moveTo(ontop.x - (name_length/2) - 15, ontop.y)
-                            ctx.lineTo(ontop.x - (name_length/2) - 10, ontop.y - 10)
-                            ctx.lineTo(ontop.x - (name_length/2) - 5, ontop.y)
+                            ctx.moveTo(ontop.x - (name_length / 2) - 15, ontop.y)
+                            ctx.lineTo(ontop.x - (name_length / 2) - 10, ontop.y - 10)
+                            ctx.lineTo(ontop.x - (name_length / 2) - 5, ontop.y)
                             ctx.closePath()
                             ctx.fill()
                             ctx.fillStyle = "#FFF"
@@ -1071,6 +1072,28 @@
 
             const update_map = () => {
                 imgmap.innerHTML = ""
+
+                players.forEach(player => {
+                    const player_x = player.x
+                    const player_y = player.y
+                    const char_w = character.width
+                    const char_h = character.height
+                    const name_len = ctx.measureText(player.username).width / 2
+
+                    const pla_x = display_x + (player_x * (tile_w * 2) - (player_x * tile_w) - (player_y * tile_w)) - name_len - 15
+                    const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2))) - char_h + tile_h - 15
+                    
+                    const x1 = pla_x
+                    const y1 = pla_y
+                    const x2 = pla_x + 10
+                    const y2 = pla_y
+                    const x3 = pla_x + 10
+                    const y3 = pla_y + 20
+                    const x4 = pla_x
+                    const y4 = pla_y + 20
+                    imgmap.insertAdjacentHTML('beforeend', `<area player_id='${player.id}' class='player_nametag' shape='polygon' coords='${x1},${y1},${x2},${y2},${x3},${y3},${x4},${y4}'>`)
+                })
+
                 //draw furniture's map
                 furnis.forEach(furni => {
                     const j = furni.y
@@ -1357,7 +1380,7 @@
                 move_furni = 0
                 selected_furni = 0
                 mousedown = false
-                update_map()
+                //update_map()
                 if (from_inventory) {
                     from_inventory = false
                     socket.emit("inventory_list")
@@ -1439,7 +1462,6 @@
                         }
                         //place furni id and show on left side.... continues
                         const furni_id = e.target.getAttribute("furni_id")
-                        //move_furni = furni_id
                         selected_furni = furni_id
                         bottom_right.style.display = "block"
                         action_button_holder.style.display = "block"
@@ -1449,6 +1471,13 @@
                         document.querySelector("#bottom_right_title").innerHTML = item_info.name
                         document.querySelector("#bottom_right_image").src = "items/" + item_info.image
                     }
+                }
+                if (e.target.className == "player_nametag") {
+                    const given_id = e.target.getAttribute("player_id")
+                    const this_player = players.find(e => { return e.id == given_id })
+                    bottom_right.style.display = "block"
+                    document.querySelector("#bottom_right_title").innerHTML = `${this_player.username}`
+                    document.querySelector("#bottom_right_image").src = ""
                 }
 
                 if (from_inventory) {
@@ -1780,7 +1809,7 @@
                             ctx.fillStyle = "#0F0"
                             ctx.fillText("Welcome to zetta Online....", can.width / 2, can.height / 2)
 
-                            update_map()
+                            //update_map()
                             setTimeout(game, 2000)
                             //game()
                         }

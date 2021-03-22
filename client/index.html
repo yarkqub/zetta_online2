@@ -457,7 +457,7 @@
     </div>
     <script>
         (() => {
-            const zetta_version = 0.25
+            const zetta_version = 0.26
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
             const socket = io()
             let stats
@@ -524,6 +524,10 @@
             //player image
             let char_image = new Image()
             char_image.src = "characters/character_sprite.png"
+
+            let baju = new Image()
+            baju.src = "characters/baju/baju_0000.png"
+
             const character = {
                 width: 64,
                 height: 110
@@ -928,8 +932,9 @@
                             draw.sort((a, b) => { return a.real_x - b.real_x })
                             draw.forEach(lukisan => {
                                 if (lukisan.cx != null) {
-                                    //this is user....
+                                    //this is user.... lukis user
                                     ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                                    ctx.drawImage(baju, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
                                 }
                                 else {
                                     //this is furni
@@ -938,6 +943,7 @@
                                     draw_array.forEach(pp => {
                                         if (pp.real_x == lukisan.real_x && pp.real_y == lukisan.real_y && pp.cx != null) {
                                             ctx.drawImage(pp.img, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
+                                            ctx.drawImage(baju, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
                                         }
                                     })
 

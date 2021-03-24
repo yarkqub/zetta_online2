@@ -935,6 +935,18 @@
                                     //this is user.... lukis user
                                     ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
                                     ctx.drawImage(baju, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                                    
+                                    let red = 50
+                                    let gr = 50
+                                    let bl = 50
+                                    var myImg = ctx.getImageData(lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+                                    for (var t = 0; t < myImg.data.length; t += 4) {
+                                        myImg.data[t] = red | myImg.data[t];
+                                        myImg.data[t + 1] = gr | myImg.data[t + 1];
+                                        myImg.data[t + 2] = bl | myImg.data[t + 2];
+                                    }
+                                    ctx.putImageData(myImg, 0, 200); // Image data is adjusted according to context
+
                                 }
                                 else {
                                     //this is furni
@@ -1088,7 +1100,7 @@
 
                     const pla_x = display_x + (player_x * (tile_w * 2) - (player_x * tile_w) - (player_y * tile_w)) - name_len - 15
                     const pla_y = display_y + (player_y * (tile_h * 2) - (player_y * tile_h) + (player_x * tile_h) - (room.map[Math.floor(player_y)][Math.floor(player_x)] * (tile_h / 2))) - char_h + tile_h - 15
-                    
+
                     const x1 = pla_x
                     const y1 = pla_y
                     const x2 = pla_x + 10

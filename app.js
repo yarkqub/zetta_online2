@@ -266,7 +266,7 @@ io.on('connection', (socket) => {
                     player.state = "sit"
                     io.to(player.room).emit("sit", { id: player.id })
                 }
-                if(data.startsWith(":cmd") || data.startsWith(":commands") || data.startsWith(":help")){
+                else if(data.startsWith(":cmd") || data.startsWith(":commands") || data.startsWith(":help")){
                     socket.emit("message", { type: "message_box", message: ":sit - to sitdown\n:help/:cmd/:commands - This commands" })
                 }
                 else {

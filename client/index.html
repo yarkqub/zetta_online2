@@ -932,10 +932,36 @@
                             draw.sort((a, b) => { return a.real_x - b.real_x })
                             draw.forEach(lukisan => {
                                 if (lukisan.cx != null) {
-                                    //this is user.... lukis user
+                                    //this is user.... lukis user  / draw player
                                     ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+
+
+                                    //ctx.drawImage(baju, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
+
+                                    const new_canvas = document.createElement("canvas")
+                                    new_canvas.width = baju.width
+                                    new_canvas.height = baju.height
+                                    new_canvas.ctx = new_canvas.getContext("2d"); // attach context to the canvas for eaasy reference
+                                    new_canvas.ctx.drawImage(baju, 0, 0, baju.width, baju.height)
+
+                                    new_canvas.ctx.fillStyle = "hsl(" + Math.floor(Math.random() * 360) + ",100%,50%)";
+                                    new_canvas.ctx.globalCompositeOperation = "color";
+                                    new_canvas.ctx.fillRect(0, 0, baju.width, baju.height);
+                                    new_canvas.ctx.globalCompositeOperation = "source-over";
+
+                                    new_canvas.ctx.globalCompositeOperation = "destination-in";
+                                    new_canvas.ctx.drawImage(baju, 0, 0, baju.width, baju.height)
+                                    new_canvas.ctx.globalCompositeOperation = "source-over";
+
+                                    ctx.drawImage(new_canvas, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph);
+
+
+                                    /*ctx.fillStyle = "#FF000055";
+                                    ctx.fillRect(lukisan.px, lukisan.py, lukisan.pw, lukisan.ph);
+                                    ctx.globalCompositeOperation = "destination-in";
                                     ctx.drawImage(baju, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
-                                    
+                                    ctx.globalCompositeOperation = "source-over";
+
                                     let red = 50
                                     let gr = 50
                                     let bl = 50
@@ -946,6 +972,7 @@
                                         myImg.data[t + 2] = bl | myImg.data[t + 2];
                                     }
                                     ctx.putImageData(myImg, 0, 200); // Image data is adjusted according to context
+                                    */
 
                                 }
                                 else {

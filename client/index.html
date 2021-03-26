@@ -526,7 +526,7 @@
             char_image.src = "characters/character_sprite.png"
 
             let baju = new Image()
-            baju.src = "characters/baju/baju_0000.png"
+            baju.src = "characters/baju/baju_0002.png"
 
             const character = {
                 width: 64,
@@ -944,7 +944,7 @@
                                     new_canvas.ctx = new_canvas.getContext("2d"); // attach context to the canvas for eaasy reference
                                     new_canvas.ctx.drawImage(baju, 0, 0, baju.width, baju.height)
 
-                                    new_canvas.ctx.fillStyle = "hsl(" + Math.floor(Math.random() * 360) + ",100%,50%)";
+                                    new_canvas.ctx.fillStyle = "hsl(" + 200 + ",100%,50%)";
                                     new_canvas.ctx.globalCompositeOperation = "color";
                                     new_canvas.ctx.fillRect(0, 0, baju.width, baju.height);
                                     new_canvas.ctx.globalCompositeOperation = "source-over";
@@ -956,7 +956,9 @@
                                     ctx.drawImage(new_canvas, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph);
 
 
-                                    /*ctx.fillStyle = "#FF000055";
+                                    /*
+                                    //this code for little map but I disable it because idk why
+                                    ctx.fillStyle = "#FF000055";
                                     ctx.fillRect(lukisan.px, lukisan.py, lukisan.pw, lukisan.ph);
                                     ctx.globalCompositeOperation = "destination-in";
                                     ctx.drawImage(baju, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)

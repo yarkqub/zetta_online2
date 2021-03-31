@@ -18,13 +18,16 @@ let loaded_rooms = [];
 //if ./data/sqlite.db not exist, create it
 db.serialize(() => {
     if (!exists) {
-        db.run("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, email TEXT, coins INTEGER)")
+        db.run("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, email TEXT, coins INTEGER, look TEXT)")
         db.run("CREATE TABLE rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, owner INTEGER, map TEXT, door TEXT)")
         db.run("CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, image TEXT, width INTEGER, height INTEGER)")
         db.run("CREATE TABLE shop_pages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, order_num TEXT, parent INTEGER)")
         db.run("CREATE TABLE shop_items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, item_id INTEGER, page_id INTEGER, price REAL, is_limmited INTEGER, item_left INTEGER)")
         db.run("CREATE TABLE furniture (id INTEGER PRIMARY KEY AUTOINCREMENT, item_id INTEGER, owner INTEGER, room INTEGER, x INTEGER, y INTEGER)")
+        db.run("CREATE TABLE cloth (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
+        
         db.run("INSERT INTO rooms (name, owner, map, door) VALUES ('Welcome Lounge', '0', '[[0, 0, 0, 0, 1, 0, 0, 0, 0],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1],[1, 1, 1, 1, 1, 1, 1, 1, 1]]', '[4, 0]')")
+        console.log("Server run for first time")
     }
 });
 
@@ -320,7 +323,7 @@ io.on('connection', (socket) => {
                     db.each("SELECT COUNT(*) FROM users WHERE email = ? COLLATE NOCASE", data.email, (err, res) => {
                         if (res["COUNT(*)"] == 0) {
                             bcrypt.hash(data.password, saltRounds, (err, hash) => {
-                                db.run("INSERT INTO users (username, email, password, coins) VALUES (?, ?, ?, 100)", data.username, data.email, hash, (err, res) => {
+                                db.run("INSERT INTO users (username, email, password, coins, look) VALUES (?, ?, ?, 100, ?)", data.username, data.email, hash, '', (err, res) => {
                                     socket.emit("message", { type: "succes_register", message: "Successfully registerd. Please login to continue." })
                                 })
                             })

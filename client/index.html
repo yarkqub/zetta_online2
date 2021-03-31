@@ -82,6 +82,17 @@
         #open_inventory {
             z-index: 4;
             position: fixed;
+            bottom: 170px;
+            left: 0px;
+            width: 50px;
+            height: 50px;
+            display: none;
+            margin-left: 8px;
+        }
+
+        #open_cloth {
+            z-index: 4;
+            position: fixed;
             bottom: 120px;
             left: 0px;
             width: 50px;
@@ -195,6 +206,7 @@
             top: 10px;
         }
 
+        .cloth_type,
         .inventory_type,
         .shop_type,
         .room_nav_type {
@@ -367,6 +379,36 @@
             position: absolute;
             bottom: 0px;
         }
+
+        #cloth_list {
+            background: #000000;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 100%;
+            height: 50%;
+        }
+
+        #cloth_color_list {
+            background: #E2E2E2;
+            position: absolute;
+            top: 50%;
+            right: 0px;
+            width: 100%;
+            height: 50%;
+            overflow-y: scroll;
+        }
+
+        .color_palet {
+            width: 13px;
+            height: 19px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            margin-right: 1px;
+            margin-left: 1px;
+            border: 2px solid #726C66;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -415,6 +457,26 @@
         <div id="inventory_list"></div>
     </div>
 
+    <div id="cloth" class="floating_window">
+        <div id="cloth_header" class="floating_window_header">Cloth <button id="close_cloth"
+                class="floating_close">&times;</button></div>
+        <div
+            style="border-bottom: 1px solid black; background-color: white; height: 35px; width: 100%; position: relative; overflow: visible;">
+            <div style="position:absolute; width: 100%; bottom: -1px;">
+
+                <button class="cloth_type" data="hair">Hair</button>
+                <button class="cloth_type active_room_nav" data="top">Top</button>
+                <button class="cloth_type" data="bottom">Bottom</button>
+                <button class="cloth_type" data="shoe">Shoe</button>
+            </div>
+        </div>
+        <div style="position: relative; height: calc(100% - 65px); top: 0px; width: 100%;">
+            <div id="cloth_list"></div>
+            <div id="cloth_color_list">
+            </div>
+        </div>
+    </div>
+
     <div id="form">
         <h3>Zetta Online</h3>
         <div id="login">
@@ -445,6 +507,7 @@
     <img src="transparent.png" id="touch_screen">
     <button id="open_room_nav" class="in_client">Room</button>
     <button id="open_inventory" class="in_client">Inventory</button>
+    <button id="open_cloth" class="in_client">Cloth</button>
     <button id="open_shop" class="in_client">Shop</button>
     <input type="text" class="in_client" id="chat_box" placeholder="Type here to chat...">
     <div class="bottom_right">
@@ -457,7 +520,7 @@
     </div>
     <script>
         (() => {
-            const zetta_version = 0.26
+            const zetta_version = 0.27
             console.log('%c Welcome To \n%cZetta Online%c! \n%c Code by: %cAkob \n%c Version: %c' + zetta_version + ' ', 'background: #222; color: #bada55', 'background: #222; color: #F00', 'background: #222; color: #F8A', 'background: #222; color: #888', 'background: #222; color: #8FA', 'background: #222; color: #888', 'background: #222; color: #8FA');
             const socket = io()
             let stats
@@ -474,6 +537,7 @@
 
             const window_inventory = document.querySelector("#inventory")
             const create_room = document.querySelector("#create_room")
+            const window_cloth = document.querySelector("#cloth")
 
             const tile = {
                 width: tile_width / 2,
@@ -519,7 +583,7 @@
             let from_inventory = false
             let not_loading = false
 
-            let debug
+            let debug = 100
 
             //player image
             let char_image = new Image()
@@ -542,6 +606,38 @@
             let current_frame = 0
             let fps_time = Date.now()
 
+            //color image
+            const color_image = (img, color) => {
+                const new_canvas = document.createElement("canvas")
+                new_canvas.width = img.width
+                new_canvas.height = img.height
+                new_canvas.ctx = new_canvas.getContext("2d"); // attach context to the canvas for eaasy reference
+                new_canvas.ctx.drawImage(img, 0, 0, img.width, img.height)
+                const hexcolor = hslToHex(color, 100, 50)
+                new_canvas.ctx.fillStyle = hexcolor
+                new_canvas.ctx.globalCompositeOperation = "color";
+                new_canvas.ctx.fillRect(0, 0, img.width, img.height);
+                new_canvas.ctx.globalCompositeOperation = "source-over";
+
+                new_canvas.ctx.globalCompositeOperation = "destination-in";
+                new_canvas.ctx.drawImage(img, 0, 0, img.width, img.height)
+                new_canvas.ctx.globalCompositeOperation = "source-over";
+                return new_canvas
+                //ctx.drawImage(new_canvas, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph);
+            }
+
+            //hsl to hex
+            function hslToHex(h, s, l) {
+                l /= 100;
+                const a = s * Math.min(l, 1 - l) / 100;
+                const f = n => {
+                    const k = (n + h / 30) % 12;
+                    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                    return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
+                };
+                return `#${f(0)}${f(8)}${f(4)}`;
+            }
+
             //typing timeout
             const typing_timeout = () => {
                 clearTimeout(typing_timer)
@@ -549,6 +645,13 @@
                     socket.emit("typing", false)
                     typing = false
                 }, 3000)
+            }
+
+            //list of color picker
+            const cloth_color_list = document.querySelector("#cloth_color_list")
+            for (let i = 0; i < 360; i += 5) {
+                const tmp_col = hslToHex(i, 100, 50)
+                cloth_color_list.insertAdjacentHTML("beforeend", `<button class="color_palet" style="background: ${tmp_col}" data="${i}">_</button>`)
             }
 
             //initiate game settings...
@@ -935,26 +1038,8 @@
                                     //this is user.... lukis user  / draw player
                                     ctx.drawImage(lukisan.img, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
 
-
-                                    //ctx.drawImage(baju, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph)
-
-                                    const new_canvas = document.createElement("canvas")
-                                    new_canvas.width = baju.width
-                                    new_canvas.height = baju.height
-                                    new_canvas.ctx = new_canvas.getContext("2d"); // attach context to the canvas for eaasy reference
-                                    new_canvas.ctx.drawImage(baju, 0, 0, baju.width, baju.height)
-
-                                    new_canvas.ctx.fillStyle = "hsl(" + 200 + ",100%,50%)";
-                                    new_canvas.ctx.globalCompositeOperation = "color";
-                                    new_canvas.ctx.fillRect(0, 0, baju.width, baju.height);
-                                    new_canvas.ctx.globalCompositeOperation = "source-over";
-
-                                    new_canvas.ctx.globalCompositeOperation = "destination-in";
-                                    new_canvas.ctx.drawImage(baju, 0, 0, baju.width, baju.height)
-                                    new_canvas.ctx.globalCompositeOperation = "source-over";
-
-                                    ctx.drawImage(new_canvas, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph);
-
+                                    const colored_image = color_image(baju, debug)
+                                    ctx.drawImage(colored_image, lukisan.cx, lukisan.cy, lukisan.cw, lukisan.ch, lukisan.px, lukisan.py, lukisan.pw, lukisan.ph);
 
                                     /*
                                     //this code for little map but I disable it because idk why
@@ -984,7 +1069,9 @@
                                     draw_array.forEach(pp => {
                                         if (pp.real_x == lukisan.real_x && pp.real_y == lukisan.real_y && pp.cx != null) {
                                             ctx.drawImage(pp.img, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
-                                            ctx.drawImage(baju, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
+                                            //ctx.drawImage(baju, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph)
+                                            const colored_image = color_image(baju, 100)
+                                            ctx.drawImage(colored_image, pp.cx, pp.cy, pp.cw, pp.ch, pp.px, pp.py, pp.pw, pp.ph);
                                         }
                                     })
 
@@ -1334,6 +1421,9 @@
             document.querySelector("#close_shop").addEventListener("click", () => {
                 document.querySelector("#shop").style.display = "none"
             })
+            document.querySelector("#close_cloth").addEventListener("click", () => {
+                window_cloth.style.display = "none"
+            })
 
             document.querySelector("#open_room_nav").addEventListener("click", () => {
                 document.querySelector("#room_nav").style.display = "block"
@@ -1346,6 +1436,9 @@
             document.querySelector("#open_inventory").addEventListener("click", () => {
                 window_inventory.style.display = "block"
                 socket.emit("inventory_list")
+            })
+            document.querySelector("#open_cloth").addEventListener("click", () => {
+                window_cloth.style.display = "block"
 
             })
 
@@ -1394,8 +1487,9 @@
             }
 
             drag_room_nav(document.querySelector("#room_nav"));
-            drag_room_nav(document.querySelector("#inventory"));
+            drag_room_nav(window_inventory);
             drag_room_nav(document.querySelector("#shop"));
+            drag_room_nav(window_cloth)
 
             /////////////////////////////////////////////////
 
@@ -1659,6 +1753,9 @@
                         furnis.push({ id: this_furni_id, item_id: this_item_id, owner: 0, room: 0, x: -1, y: -1 })
                         window_inventory.style.display = "none"
                         move_furni = this_furni_id
+                    }
+                    if (e == "color_palet") {
+                        debug = el.target.getAttribute("data")
                     }
                 })
             })
